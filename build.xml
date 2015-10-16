@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ObjectMapper" default="dist" basedir=".">
+    <description>
+        ORM layer to map the SQL Query results to Java Classes
+    </description>
+    <!-- set global properties for this build -->
+    <property name="lib" location="lib" />
+    <property name="src" location="src" />
+    <property name="build" location="build" />
+    <property name="dist" location="dist" />
+    <property name="test" location="tests" />
+    <property name="build.test" location="test_build" />
+    
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}" />
+    </target>
+    
+    <target name="compile" depends="init,clean,makedir" description="compile the source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac srcdir="${src}" destdir="${build}" debug="on" deprecation="on" includeantruntime="false"/>
+        <javac srcdir="${test}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
+        	<classpath refid="lib.class.path" />
+        </javac>
+    </target>
+    
+    <target name="dist" depends="compile" description="generate the distribution">
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}/lib" />
+        <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+        <jar jarfile="${dist}/lib/${ant.project.name}.jar" basedir="${build}" />
+    </target>
+    
+    <target name="clean" description="clean up">
+        <!-- Delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}" />
+        <delete dir="${dist}" />
+        <delete dir="${build.test}" />
+    </target>
+    
+    <target name="makedir">
+		<mkdir dir="${build}" />
+		<mkdir dir="${dist}" />
+		<mkdir dir="${build.test}" />
+	</target>
+    
+    <target name="junit" depends="compile">
+		<junit printsummary="on" fork="true" haltonfailure="yes">
+			<classpath refid="junit.class.path" />
+			<classpath>
+				<pathelement location="${build.test}"/>
+			</classpath>
+			<!-- <formatter type="xml" /> -->
+			<formatter type="plain" usefile="false" />
+			<batchtest todir="${build.report}">
+				<fileset dir="${test}">
+					<include name="**/*Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<path id="lib.class.path">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="junit.class.path">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement location="${build}" />
+	</path>
+</project>
