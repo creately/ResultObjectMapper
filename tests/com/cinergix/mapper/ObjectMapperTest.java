@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
 import org.junit.After;
@@ -12,9 +13,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.cinergix.mapper.data.User;
+import com.mysql.jdbc.UpdatableResultSet;
 
 public class ObjectMapperTest {
 
+	private String userName = "root";
+	private String password = "root";
+	private String database = "jdbc:mysql://localhost/test";
 	private Connection connection;
 	
 	@Before
@@ -24,22 +29,21 @@ public class ObjectMapperTest {
 		createConnection();
 		
 		// To insert a test data
-		ResultSet result = getResultSetForQuery("INSERT INTO user ( 'id', 'name', 'email' ) VALUES ( 'testID', 'Test Name', 'test@cinergix.com' )");
+//		updateData("INSERT INTO user ( id, name, email, user_status ) VALUES ( 'rasi_1', 'Test Name', 'test@cinergix.com', 1 )");
 	}
 	
 	@After
-	private void afterFunction(){
+	public void afterFunction(){
 		
 		// To delete the Test Data
-		ResultSet result = getResultSetForQuery( "DELETE FROM user WHERE id LIKE 'testID'" );
+//		updateData( "DELETE FROM user WHERE id LIKE 'rasi_1'" );
 	}
 	
 	private void createConnection(){
 		try{
 			
 			Class.forName("com.mysql.jdbc.Driver");
-			String database = "jdbc:mysql://localhost/tddb"; 
-			connection = DriverManager.getConnection( database ,"root","p4ssw0rd");
+			connection = DriverManager.getConnection( database, userName, password );
 		} catch( Exception e ){
 			e.printStackTrace();
 		}
@@ -53,6 +57,16 @@ public class ObjectMapperTest {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	private void updateData( String sql ){
+		try{
+			
+			Statement stmt = connection.createStatement();
+			stmt.executeUpdate( sql );
+		} catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
