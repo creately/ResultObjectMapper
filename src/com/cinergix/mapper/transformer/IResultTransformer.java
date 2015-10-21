@@ -1,7 +1,9 @@
 package com.cinergix.mapper.transformer;
 
 /**
- * Every transformer classes which are mapping to convert the result while assigning to properties should implement this interface
+ * The class implemented by this interface will be associated with the annotation
+ * <code>ResultTransformerClass</code>. The methods in the class implemented by
+ * this interface will be used with the annotation <code>ResultTransformer</code>
  * @author rasekaran
  *
  */

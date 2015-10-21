@@ -8,6 +8,7 @@
     <property name="src" location="src" />
     <property name="build" location="build" />
     <property name="dist" location="dist" />
+	<property name="mock" location="mocks" />
     <property name="test" location="tests" />
     <property name="build.test" location="${build}/tests" />
     
@@ -21,17 +22,24 @@
     <target name="compile" depends="init,clean,makedir" description="compile the source">
         <!-- Compile the java code from ${src} into ${build} -->
         <javac srcdir="${src}" destdir="${build}" debug="on" deprecation="on" includeantruntime="false"/>
+    	<!-- Compile the test mock classes from ${mock} to ${build.test} -->
+    	<javac srcdir="${mock}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
+        	<classpath refid="junit.class.path" />
+        </javac>
     	<!-- Compile the test code from ${test} to ${build.test} -->
         <javac srcdir="${test}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
         	<classpath refid="junit.class.path" />
         </javac>
     </target>
     
+	<!-- Create jar file -->
     <target name="dist" depends="compile" description="generate the distribution">
-        <!-- Create the distribution directory -->
-        <mkdir dir="${dist}/lib" />
         <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-        <jar jarfile="${dist}/lib/${ant.project.name}.jar" basedir="${build}" />
+        <jar jarfile="${dist}/${ant.project.name}.jar">
+        	<fileset dir="${build}">
+        		<exclude name="tests/**"/>
+        	</fileset>
+        </jar>
     </target>
     
     <target name="clean" description="clean up">
@@ -41,6 +49,7 @@
         <delete dir="${build.test}" />
     </target>
     
+	<!-- Create directories -->
     <target name="makedir">
 		<mkdir dir="${build}" />
 		<mkdir dir="${dist}" />
@@ -55,7 +64,7 @@
 			<formatter type="plain" usefile="false" />
 			<batchtest todir="${build.test}">
 				<fileset dir="${test}">
-					<include name="**/*Test*.java" />
+					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 		</junit>

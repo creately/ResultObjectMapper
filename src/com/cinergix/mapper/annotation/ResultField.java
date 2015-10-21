@@ -1,10 +1,19 @@
 package com.cinergix.mapper.annotation;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * This Annotation class used to annotate the field and to indicate which result field is mapped to this field.
+ * This is an annotation used to specify a property that maps to a field of the result set.
+ * The value specific field in the result set will assigned to this property.
  * @author rasekaran
  *
  */
+
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.FIELD )
 public @interface ResultField {
 
 	/**
