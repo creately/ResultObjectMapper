@@ -9,9 +9,10 @@
     <property name="src" location="src" />
     <property name="build" location="build" />
     <property name="dist" location="dist" />
-	<property name="mock" location="mock" />
-    <property name="spec" location="spec" />
-    <property name="build.spec" location="${build}/spec" />
+	<property name="test" location="test" />
+	<property name="mock" location="${test}/mock" />
+    <property name="spec" location="${test}/spec" />
+    <property name="build.test" location="${build}/test" />
     
     <target name="init">
         <!-- Create the time stamp -->
@@ -24,11 +25,11 @@
         <!-- Compile the java code from ${src} into ${build} -->
         <javac srcdir="${src}" destdir="${build}" debug="on" deprecation="on" includeantruntime="false"/>
     	<!-- Compile the test mock classes from ${mock} to ${build.spec} -->
-    	<javac srcdir="${mock}" destdir="${build.spec}" debug="on" deprecation="on" includeantruntime="false">
+    	<javac srcdir="${mock}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
         	<classpath refid="junit.class.path" />
         </javac>
     	<!-- Compile the test code from ${spec} to ${build.spec} -->
-        <javac srcdir="${spec}" destdir="${build.spec}" debug="on" deprecation="on" includeantruntime="false">
+        <javac srcdir="${spec}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
         	<classpath refid="junit.class.path" />
         </javac>
     </target>
@@ -38,7 +39,7 @@
         <!-- Put everything in ${build} into the ProjectName.${VERSION}.jar file -->
         <jar jarfile="${dist}/${ant.project.name}.${project.version}.jar">
         	<fileset dir="${build}">
-        		<exclude name="spec/**"/>
+        		<exclude name="test/**"/>
         	</fileset>
         </jar>
     </target>
@@ -47,23 +48,23 @@
         <!-- Delete the ${build} and ${dist} directory trees -->
         <delete dir="${build}" />
         <delete dir="${dist}" />
-        <delete dir="${build.spec}" />
+        <delete dir="${build.test}" />
     </target>
     
 	<!-- Create directories -->
     <target name="makedir">
 		<mkdir dir="${build}" />
 		<mkdir dir="${dist}" />
-		<mkdir dir="${build.spec}" />
+		<mkdir dir="${build.test}" />
 	</target>
     
 	<!-- unit test -->
     <target name="junit" depends="compile">
 		<junit printsummary="on" fork="true" haltonfailure="yes">
 			<classpath refid="junit.class.path" />
-			<classpath location="${build.spec}"/>
+			<classpath location="${build.test}"/>
 			<formatter type="plain" usefile="false" />
-			<batchtest todir="${build.spec}">
+			<batchtest todir="${build.test}">
 				<fileset dir="${spec}">
 					<include name="**/*Test.java" />
 				</fileset>
