@@ -20,5 +20,9 @@ import java.lang.annotation.Target;
 @Target( ElementType.FIELD )
 public @interface ResultTransformer {
 
-	String methodName();
+	/**
+	 * Name of the method which will be use to convert the data before assign to the property.
+	 * @return name of the method as strings.
+	 */
+	String value();
 }

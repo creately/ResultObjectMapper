@@ -36,7 +36,7 @@ public class ObjectMapperTest {
 		List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
 		
 		assertNotNull( userList );
-		assertEquals( "mapResultSetToObjectShouldReturnEmptyListIfResultSetIsEmpty - Expected 0 actual " + userList.size(), 0, userList.size() );
+		assertEquals( "mapResultSetToObject Should Return Empty List If ResultSet Is Empty", 0, userList.size() );
 	}
 	
 	@Test
@@ -44,6 +44,6 @@ public class ObjectMapperTest {
 		
 		ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
 		List<UserMock> userList = mapper.mapResultSetToObject( null, UserMock.class );
-		assertNull("mapResultSetToObjectShouldReturnNullIfResultSetIsNull", userList);
+		assertNull("mapResultSetToObject Should Return Null If ResultSet Is Null", userList);
 	}
 }

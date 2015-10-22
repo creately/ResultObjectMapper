@@ -15,9 +15,9 @@ public class ResultTransformerClassTest {
 	}
 	
 	@Test
-	public void transformerClassPropertyOfResultTransformerClassAnnotationShouldReturnCorrectValueSpecifiedInTheAnnotation(){
+	public void valuePropertyOfResultTransformerClassAnnotationShouldReturnCorrectValueSpecifiedInTheAnnotation(){
 		Class<UserMock> userClass = UserMock.class;
 		assertNotNull( userClass.getAnnotation( ResultTransformerClass.class ) );
-		assertEquals( "transformerClass property of ResultTransformerClass annotation should return correct value specified in the annotaion", ResultTransformerMock.class, ( userClass.getAnnotation( ResultTransformerClass.class ).transformerClass() ) );
+		assertEquals( "value property of ResultTransformerClass annotation should return correct value specified in the annotaion", ResultTransformerMock.class, ( userClass.getAnnotation( ResultTransformerClass.class ).value() ) );
 	}
 }

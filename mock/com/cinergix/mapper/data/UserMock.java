@@ -10,20 +10,20 @@ import com.cinergix.mapper.transformer.annotation.ResultTransformer;
 import com.cinergix.mapper.transformer.annotation.ResultTransformerClass;
 
 @ResultMapped
-@ResultTransformerClass( transformerClass = ResultTransformerMock.class )
+@ResultTransformerClass( ResultTransformerMock.class )
 public class UserMock {
 
-	@ResultField( fieldName = "user_id" )
+	@ResultField( "user_id" )
 	private String id;
-	@ResultField( fieldName = "user_name" )
-	@ResultTransformer( methodName = "getFirstName" )
+	@ResultField( "user_name" )
+	@ResultTransformer( "getFirstName" )
 	private String name;
-	@ResultField( fieldName = "user_email" )
+	@ResultField( "user_email" )
 	private String email;
-	@ResultField( fieldName = "user_age" )
+	@ResultField( "user_age" )
 	private int age;
 	@ResultObject
-	@ResultField( fieldName = "manager" )
+	@ResultField( "manager" )
 	private SimpleUserMock manager;
 	
 	public String getId() {

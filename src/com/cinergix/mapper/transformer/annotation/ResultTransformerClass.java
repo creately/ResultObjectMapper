@@ -22,5 +22,9 @@ import com.cinergix.mapper.transformer.IResultTransformer;
 @Target( ElementType.TYPE )
 public @interface ResultTransformerClass {
 
-	Class< ? extends IResultTransformer> transformerClass();
+	/**
+	 * To represent the type of transformer class which will have the methods to transform the data.
+	 * @return Type of Teansformer class.
+	 */
+	Class< ? extends IResultTransformer> value();
 }

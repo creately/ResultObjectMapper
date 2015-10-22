@@ -4,13 +4,14 @@
         ORM layer to map the SQL Query results to Java Classes
     </description>
     <!-- set global properties for this build -->
+	<property name="project.version" value="0.1"/>
     <property name="lib" location="lib" />
     <property name="src" location="src" />
     <property name="build" location="build" />
     <property name="dist" location="dist" />
-	<property name="mock" location="mocks" />
-    <property name="test" location="tests" />
-    <property name="build.test" location="${build}/tests" />
+	<property name="mock" location="mock" />
+    <property name="spec" location="spec" />
+    <property name="build.spec" location="${build}/spec" />
     
     <target name="init">
         <!-- Create the time stamp -->
@@ -22,22 +23,22 @@
     <target name="compile" depends="init,clean,makedir" description="compile the source">
         <!-- Compile the java code from ${src} into ${build} -->
         <javac srcdir="${src}" destdir="${build}" debug="on" deprecation="on" includeantruntime="false"/>
-    	<!-- Compile the test mock classes from ${mock} to ${build.test} -->
-    	<javac srcdir="${mock}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
+    	<!-- Compile the test mock classes from ${mock} to ${build.spec} -->
+    	<javac srcdir="${mock}" destdir="${build.spec}" debug="on" deprecation="on" includeantruntime="false">
         	<classpath refid="junit.class.path" />
         </javac>
-    	<!-- Compile the test code from ${test} to ${build.test} -->
-        <javac srcdir="${test}" destdir="${build.test}" debug="on" deprecation="on" includeantruntime="false">
+    	<!-- Compile the test code from ${spec} to ${build.spec} -->
+        <javac srcdir="${spec}" destdir="${build.spec}" debug="on" deprecation="on" includeantruntime="false">
         	<classpath refid="junit.class.path" />
         </javac>
     </target>
     
 	<!-- Create jar file -->
     <target name="dist" depends="compile" description="generate the distribution">
-        <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-        <jar jarfile="${dist}/${ant.project.name}.jar">
+        <!-- Put everything in ${build} into the ProjectName.${VERSION}.jar file -->
+        <jar jarfile="${dist}/${ant.project.name}.${project.version}.jar">
         	<fileset dir="${build}">
-        		<exclude name="tests/**"/>
+        		<exclude name="spec/**"/>
         	</fileset>
         </jar>
     </target>
@@ -46,24 +47,24 @@
         <!-- Delete the ${build} and ${dist} directory trees -->
         <delete dir="${build}" />
         <delete dir="${dist}" />
-        <delete dir="${build.test}" />
+        <delete dir="${build.spec}" />
     </target>
     
 	<!-- Create directories -->
     <target name="makedir">
 		<mkdir dir="${build}" />
 		<mkdir dir="${dist}" />
-		<mkdir dir="${build.test}" />
+		<mkdir dir="${build.spec}" />
 	</target>
     
 	<!-- unit test -->
     <target name="junit" depends="compile">
 		<junit printsummary="on" fork="true" haltonfailure="yes">
 			<classpath refid="junit.class.path" />
-			<classpath location="${build.test}"/>
+			<classpath location="${build.spec}"/>
 			<formatter type="plain" usefile="false" />
-			<batchtest todir="${build.test}">
-				<fileset dir="${test}">
+			<batchtest todir="${build.spec}">
+				<fileset dir="${spec}">
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>

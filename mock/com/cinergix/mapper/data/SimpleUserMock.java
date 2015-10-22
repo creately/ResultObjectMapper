@@ -6,7 +6,7 @@ import com.cinergix.mapper.annotation.ResultMapped;
 @ResultMapped
 public class SimpleUserMock {
 
-	@ResultField( fieldName = "user_name" )
+	@ResultField( "user_name" )
 	private String name;
 	
 	private String address;

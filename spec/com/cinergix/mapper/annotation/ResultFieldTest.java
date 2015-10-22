@@ -23,7 +23,7 @@ public class ResultFieldTest {
 	}
 	
 	@Test
-	public void fieldNamePropertyOfResultFieldAnnotationShouldReturnCorrectValueSpecifiedInTheAnnotation(){
+	public void valuePropertyOfResultFieldAnnotationShouldReturnCorrectValueSpecifiedInTheAnnotation(){
 		Class userClass = UserMock.class;
 		Field field = null;
 		try{
@@ -32,7 +32,7 @@ public class ResultFieldTest {
 		}catch ( NoSuchFieldException e ){
 			e.printStackTrace();
 		}
-		assertNotNull( field.getAnnotation( ResultField.class ) );
-		assertEquals( "fieldName property of ResultField annotation should return correct value specified in the annotaion", "user_name", field.getAnnotation( ResultField.class ).fieldName() );
+		assertNotNull( "value Property Of ResultField Annotation Should Return Correct Value Specified In The Annotation", field.getAnnotation( ResultField.class ) );
+		assertEquals( "value property of ResultField annotation should return correct value specified in the annotaion", "user_name", field.getAnnotation( ResultField.class ).value() );
 	}
 }

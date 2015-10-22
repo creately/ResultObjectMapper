@@ -17,7 +17,8 @@ import java.lang.annotation.Target;
 public @interface ResultField {
 
 	/**
-	 * To hold the field name which maps to the property
+	 * To hold the column label which maps to the property
+	 * @return Label of the column
 	 */
-	String fieldName();
+	String value();
 }

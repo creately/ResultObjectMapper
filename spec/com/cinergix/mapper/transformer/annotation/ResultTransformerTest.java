@@ -26,7 +26,7 @@ public class ResultTransformerTest {
 	}
 	
 	@Test
-	public void methodNamePropertyOfResultTransformerAnnotationShouldReturnCorrectValueSpecifiedInTheAnnotation(){
+	public void valuePropertyOfResultTransformerAnnotationShouldReturnCorrectValueSpecifiedInTheAnnotation(){
 		Class userClass = UserMock.class;
 		Field field = null;
 		try{
@@ -36,6 +36,6 @@ public class ResultTransformerTest {
 			e.printStackTrace();
 		}
 		assertNotNull( field.getAnnotation( ResultTransformer.class ) );
-		assertEquals( "Method name property of ResultTransformer annotation should return correct value specified in the annotaion", "getFirstName", field.getAnnotation( ResultTransformer.class ).methodName() );
+		assertEquals( "Value property of ResultTransformer annotation should return correct value specified in the annotaion", "getFirstName", field.getAnnotation( ResultTransformer.class ).value() );
 	}
 }
