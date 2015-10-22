@@ -83,12 +83,11 @@ public class DBServiceHelper {
 			
 			while( result.next() ){
 				
-				System.out.println( "Database name " + result.getString( 1 ) );
-				
 				if( ( "test_object_mapper" ).equals( result.getString( 1 ) ) ){
 					return;
 				}
 			}
+			
 		} catch( SQLException e){
 			e.printStackTrace();
 		}
