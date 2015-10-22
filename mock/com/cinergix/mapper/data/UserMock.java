@@ -22,6 +22,12 @@ public class UserMock {
 	private String email;
 	@ResultField( "user_age" )
 	private int age;
+	@ResultField( "user_weight" )
+	private double weight;
+	@ResultField( "user_dob" )
+	private Date dob;
+	@ResultField( "user_last_update" )
+	private Date lastUpdate;
 	@ResultObject
 	@ResultField( "manager" )
 	private SimpleUserMock manager;
