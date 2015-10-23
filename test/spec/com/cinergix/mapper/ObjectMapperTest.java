@@ -150,6 +150,36 @@ public class ObjectMapperTest {
 		}
 	}
 	
+	@Test
+	public void mapResultSetToObjectShouldReturnMapTheFirstFoundColumnToPropertyIfMoreThanOneColumnIsMapped(){
+		try{
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_first_name, email as user_email FROM user WHERE id LIKE 'testID'" );
+			
+			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
+			assertTrue( "mapResultSetToObject should map the first found column to property if more than one column is mapped", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
+			
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void mapResultSetToObjectShouldReturnMapTheFirstFoundColumnToPropertyEvenIfMoreThanOneColumnIsFoundInTheResultSet(){
+		try{
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, id as user_first_name, email as user_email FROM user WHERE id LIKE 'testID'" );
+			
+			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
+			assertTrue( "mapResultSetToObject should map the first found column to property even if more than one column is found in the result set", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
+			
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Test assignValueToField method
 	 */
@@ -446,10 +476,10 @@ public class ObjectMapperTest {
 			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class );
 			
 			method.setAccessible(true);
-			HashMap<Field, String> fieldsVsColumns = (HashMap<Field, String>) ( method.invoke( mapper, SimpleUserMock.class ) );
+			HashMap<Field, String[]> fieldsVsColumns = (HashMap<Field, String[]>) ( method.invoke( mapper, SimpleUserMock.class ) );
 			method.setAccessible(false);
 			
-			assertTrue("getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( "user_name" ).equals( fieldsVsColumns.get( fields[0] ) ) );
+			assertTrue("getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( "user_name" ).equals( fieldsVsColumns.get( fields[0] )[0] ) );
 			
 			
 		}catch ( NoSuchMethodException e1 ){
@@ -474,10 +504,10 @@ public class ObjectMapperTest {
 			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class );
 			
 			method.setAccessible(true);
-			HashMap<Field, String> fieldsVsColumns = (HashMap<Field, String>) ( method.invoke( mapper, SimpleUserMock.class ) );
+			HashMap<Field, String[]> fieldsVsColumns = (HashMap<Field, String[]>) ( method.invoke( mapper, SimpleUserMock.class ) );
 			method.setAccessible(false);
 			
-			assertTrue("getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( fieldsVsColumns.size() == 1 ) && ( "user_name" ).equals( fieldsVsColumns.get( fields[0] ) ) );
+			assertTrue("getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( fieldsVsColumns.size() == 1 ) && ( "user_name" ).equals( fieldsVsColumns.get( fields[0] )[0] ) );
 			
 			
 		}catch ( NoSuchMethodException e1 ){
@@ -532,14 +562,14 @@ public class ObjectMapperTest {
 			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class );
 			
 			method.setAccessible(true);
-			HashMap<Field, String> fieldsVsColumns = ( HashMap<Field, String> ) ( method.invoke( mapper, UserMock.class ) );
+			HashMap<Field, String[]> fieldsVsColumns = ( HashMap<Field, String[]> ) ( method.invoke( mapper, UserMock.class ) );
 			method.setAccessible(false);
 			
 			Field fID =userClass.getDeclaredField( "id" );
 			Field fEmail =userClass.getDeclaredField( "email" );
 			
-			assertTrue("getFieldColumnMapping should return All the annotated fields with its mapped colum name", ( "user_id" ).equals( fieldsVsColumns.get( fID ) ) );
-			assertTrue("getFieldColumnMapping should return All the annotated fields with its mapped colum name", ( "user_email" ).equals( fieldsVsColumns.get( fEmail ) ) );
+			assertTrue("getFieldColumnMapping should return All the annotated fields with its mapped colum name", ( "user_id" ).equals( fieldsVsColumns.get( fID )[0] ) );
+			assertTrue("getFieldColumnMapping should return All the annotated fields with its mapped colum name", ( "user_email" ).equals( fieldsVsColumns.get( fEmail )[0] ) );
 			
 		}catch( NoSuchFieldException e ){
 			e.printStackTrace();

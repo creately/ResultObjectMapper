@@ -48,7 +48,7 @@ public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) thro
 		
 		List<T> resultObjectList = new ArrayList<T>();
 			
-		HashMap< Field, String > map = getFieldColumnMapping( dataClass );
+		HashMap< Field, String[] > map = getFieldColumnMapping( dataClass );
 		
 		// To check atleast one mapped value found in the result.
 		// If not we don't have to go further( Don't need to iterate or Don't need to return list of Objects )
@@ -61,19 +61,25 @@ public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) thro
 			T newObj = (T) dataClass.newInstance();
 			
 			for( Field field : map.keySet() ){
-				try{
+				
+				for( String columnLabel : map.get( field ) ){ // Iterate through column label to find the first available column
 					
-					Object resValue = parseValue( result, map.get( field ), field.getType() );
-					if( resValue != null ){
-						assignValueToField( newObj, field, resValue );
-						valueFound = true;
+					try{
+						
+						Object resValue = parseValue( result, columnLabel, field.getType() );
+						if( resValue != null ){
+							assignValueToField( newObj, field, resValue );
+							valueFound = true;
+							break;
+						}
+						
+					}catch( SQLException sqlex ){
+						// TODO Have no idea how to handle this.( May be we don't have to handle this )
+						// sqlex.printStackTrace();
 					}
-					
-				}catch( SQLException sqlex ){
-					// TODO Have no idea how to handle this.( May be we don't have to handle this )
-					// sqlex.printStackTrace();
 				}
 			}
+			
 			if( !valueFound ){
 				
 				return resultObjectList;
@@ -147,15 +153,15 @@ public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) thro
 	 * @param dataClass
 	 * @return 
 	 */
-	private HashMap<Field, String> getFieldColumnMapping( Class dataClass ){
-		HashMap<Field, String> map = new HashMap<Field, String>();
+	private HashMap<Field, String[]> getFieldColumnMapping( Class dataClass ){
+		HashMap<Field, String[]> map = new HashMap<Field, String[]>();
 
 		for( Field field : dataClass.getDeclaredFields() ){
 			
 			ResultField resultAnnotation = field.getAnnotation( ResultField.class );
 			if( resultAnnotation != null ){
 				
-				String sqlFieldName = resultAnnotation.value();
+				String[] sqlFieldName = resultAnnotation.value();
 				map.put( field, sqlFieldName );
 			}
 		}
