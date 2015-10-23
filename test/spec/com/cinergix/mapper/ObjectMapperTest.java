@@ -19,6 +19,7 @@ import com.cinergix.db.DBServiceHelper;
 import com.cinergix.mapper.data.SimpleUserMock;
 import com.cinergix.mapper.data.UnMappedUserMock;
 import com.cinergix.mapper.data.UserMock;
+import com.cinergix.mapper.transformer.ResultTransformerMock;
 
 public class ObjectMapperTest {
 	
@@ -136,10 +137,10 @@ public class ObjectMapperTest {
 			
 			dbHelper.updateData("INSERT INTO user ( id, name, email ) VALUES ( 'testID2', 'Test Name2', 'test2@cinergix.com' )");
 			
-			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
 			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID' OR id LIKE 'testID2'" );
 			
-			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
+			List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
 			assertEquals( "mapResultSetToObject should return a list containing one SimpleUserMock", 2, userList.size() );
 			assertTrue( "mapResultSetToObject should return a list containing one SimpleUserMock", ( "Test Name" ).equals( userList.get( 0 ).getName() ) || ( "Test Name2" ).equals( userList.get( 0 ).getName() )
 																										|| ( "Test Name" ).equals( userList.get( 1 ).getName() ) || ( "Test Name2" ).equals( userList.get( 1 ).getName() ));
@@ -154,10 +155,10 @@ public class ObjectMapperTest {
 	public void mapResultSetToObjectShouldReturnMapTheFirstFoundColumnToPropertyIfMoreThanOneColumnIsMapped(){
 		try{
 			
-			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
 			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_first_name, email as user_email FROM user WHERE id LIKE 'testID'" );
 			
-			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
+			List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
 			assertTrue( "mapResultSetToObject should map the first found column to property if more than one column is mapped", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
 			
 		}catch( Exception e ){
@@ -224,14 +225,10 @@ public class ObjectMapperTest {
 			Class mapperClass = ObjectMapper.class;
 			Method method = mapperClass.getDeclaredMethod( "assignValueToField", Object.class, Field.class, Object.class );
 			method.invoke( mapper, user, field, 20 );
-			System.out.println( "user age " + user.getAge() );
 			assertEquals( "assignValueToField should convert value to the field's type before use it", 20, user.getAge() );
 			
 			method.invoke( mapper, user, field, 25 );
 			assertEquals( "assignValueToField should convert value to the field's type before use it", 25, user.getAge() );
-			
-//			method.invoke( mapper, user, field, "test" );
-//			assertEquals( "assignValueToField should convert value to the field's type before use it", null, user.getAge() );
 			
 		}catch( NoSuchFieldException e ){
 			e.printStackTrace();
