@@ -42,78 +42,112 @@ public class ObjectMapperTest {
 	 */
 	@Test
 	public void mapResultSetToObjectShouldReturnEmptyListIfResultSetIsEmpty(){
-		
-		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'ID'" );
-		ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
-		List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
-		
-		assertNotNull( userList );
-		assertEquals( "mapResultSetToObject Should Return Empty List If ResultSet Is Empty", 0, userList.size() );
+		try{
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'ID'" );
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
+			List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
+			
+			assertNotNull( userList );
+			assertEquals( "mapResultSetToObject Should Return Empty List If ResultSet Is Empty", 0, userList.size() );
+		} catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
 	public void mapResultSetToObjectShouldReturnNullIfResultSetIsNull(){
-		
-		ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
-		List<UserMock> userList = mapper.mapResultSetToObject( null, UserMock.class );
-		assertNull("mapResultSetToObject Should Return Null If ResultSet Is Null", userList);
+		try{
+			
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
+			List<UserMock> userList = mapper.mapResultSetToObject( null, UserMock.class );
+			assertNull("mapResultSetToObject Should Return Null If ResultSet Is Null", userList);
+			
+		} catch( Exception e ) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
 	public void mapResultSetToObjectShouldReturnNullIfTheGivenClassTypeIsNotAnnotatedWithResultMapped(){
+		try{
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
+			
+			ObjectMapper<UnMappedUserMock> mapper = new ObjectMapper<UnMappedUserMock>();
+			List<UnMappedUserMock> userList = mapper.mapResultSetToObject( result, UnMappedUserMock.class );
+			assertNull("mapResultSetToObject Should Return Null If Given class type is not annotated with ResultMapped", userList);
 		
-		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
-		
-		ObjectMapper<UnMappedUserMock> mapper = new ObjectMapper<UnMappedUserMock>();
-		List<UnMappedUserMock> userList = mapper.mapResultSetToObject( result, UnMappedUserMock.class );
-		assertNull("mapResultSetToObject Should Return Null If Given class type is not annotated with ResultMapped", userList);
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
 	public void mapResultSetToObjectShouldReturnNullIfTheGivenClassTypeIsNull(){
+		try{
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
+			
+			ObjectMapper mapper = new ObjectMapper();
+			List userList = mapper.mapResultSetToObject( result, null );
+			assertNull("mapResultSetToObject Should Return Null If Given class type is null", userList);
 		
-		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
-		
-		ObjectMapper mapper = new ObjectMapper();
-		List userList = mapper.mapResultSetToObject( result, null );
-		assertNull("mapResultSetToObject Should Return Null If Given class type is null", userList);
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
 	public void mapResultSetToObjectShouldReturnEmptyListIfResultSetDoesNotHaveAnyMappedColumn(){
-		
-		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id, name, email FROM user WHERE id LIKE 'testID'" );
-		ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
-		//List<User> userList = mapper.mapResultSetToObject( result );
-		List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
-		assertNotNull( userList );
-		assertEquals( "mapResultSetToObject should return empty list if ResultSet is empty", 0, userList.size() );
+		try{
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id, name, email FROM user WHERE id LIKE 'testID'" );
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
+			//List<User> userList = mapper.mapResultSetToObject( result );
+			List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
+			assertNotNull( userList );
+			assertEquals( "mapResultSetToObject should return empty list if ResultSet is empty", 0, userList.size() );
+			
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
 	public void mapResultSetToObjectShouldReturnMappedObjectForGivenOneTupleOfValueInResultSet(){
-		
-		ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
-		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
-		
-		List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
-		assertEquals( "mapResultSetToObject should return a list containing one AnnotationTestUser", 1, userList.size() );
-		assertTrue( "mapResultSetToObject should return a list containing one AnnotationTestUser", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
+		try{
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
+			
+			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
+			assertEquals( "mapResultSetToObject should return a list containing one AnnotationTestUser", 1, userList.size() );
+			assertTrue( "mapResultSetToObject should return a list containing one AnnotationTestUser", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
+			
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
 	public void mapResultSetToObjectShouldReturnMappedObjectForGivenMulltipleTupleOfValueInResultSet(){
-		
-		dbHelper.updateData("INSERT INTO user ( id, name, email ) VALUES ( 'testID2', 'Test Name2', 'test2@cinergix.com' )");
-		
-		ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
-		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID' OR id LIKE 'testID2'" );
-		
-		List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
-		assertEquals( "mapResultSetToObject should return a list containing one SimpleUserMock", 2, userList.size() );
-		assertTrue( "mapResultSetToObject should return a list containing one SimpleUserMock", ( "Test Name" ).equals( userList.get( 0 ).getName() ) || ( "Test Name2" ).equals( userList.get( 0 ).getName() )
-																									|| ( "Test Name" ).equals( userList.get( 1 ).getName() ) || ( "Test Name2" ).equals( userList.get( 1 ).getName() ));
-		dbHelper.updateData( "DELETE FROM user WHERE id LIKE 'testID2'" );
+		try{
+			
+			dbHelper.updateData("INSERT INTO user ( id, name, email ) VALUES ( 'testID2', 'Test Name2', 'test2@cinergix.com' )");
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID' OR id LIKE 'testID2'" );
+			
+			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
+			assertEquals( "mapResultSetToObject should return a list containing one SimpleUserMock", 2, userList.size() );
+			assertTrue( "mapResultSetToObject should return a list containing one SimpleUserMock", ( "Test Name" ).equals( userList.get( 0 ).getName() ) || ( "Test Name2" ).equals( userList.get( 0 ).getName() )
+																										|| ( "Test Name" ).equals( userList.get( 1 ).getName() ) || ( "Test Name2" ).equals( userList.get( 1 ).getName() ));
+			dbHelper.updateData( "DELETE FROM user WHERE id LIKE 'testID2'" );
+			
+		}catch( Exception e ){
+			e.printStackTrace();
+		}
 	}
 	
 	/**

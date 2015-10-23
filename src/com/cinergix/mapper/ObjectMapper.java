@@ -40,55 +40,46 @@ public class ObjectMapper<T> {
 	 * @param dataClass Type of object in list which is returned by this method.
 	 * @return This method returns a list of object f type <code>T</code>
 	 */
-public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) {
+public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) throws InstantiationException, IllegalAccessException, SQLException {
 		
 		if( result == null || dataClass == null  || dataClass.getAnnotation( ResultMapped.class ) == null ){
 			return null;
 		}
 		
 		List<T> resultObjectList = new ArrayList<T>();
+			
+		HashMap< Field, String > map = getFieldColumnMapping( dataClass );
 		
-		try{
+		// To check atleast one mapped value found in the result.
+		// If not we don't have to go further( Don't need to iterate or Don't need to return list of Objects )
+		boolean valueFound = false;
+		
+		// Iterate through result
+		while( result.next() ) {
 			
-			HashMap< Field, String > map = getFieldColumnMapping( dataClass );
+			// Create instance of DataClass to populate the data
+			T newObj = (T) dataClass.newInstance();
 			
-			// To check atleast one mapped value found in the result.
-			// If not we don't have to go further( Don't need to iterate or Don't need to return list of Objects )
-			boolean valueFound = false;
-			
-			// Iterate through result
-			while( result.next() ) {
-				
-				// Create instance of DataClass to populate the data
-				T newObj = (T) dataClass.newInstance();
-				
-				for( Field field : map.keySet() ){
-					try{
-						
-						Object resValue = parseValue( result, map.get( field ), field.getType() );
-						if( resValue != null ){
-							assignValueToField( newObj, field, resValue );
-							valueFound = true;
-						}
-						
-					}catch( SQLException sqlex ){
-						// TODO Have no idea how to handle this.( May be we don't have to handle this )
-						// sqlex.printStackTrace();
-					}
-				}
-				if( !valueFound ){
+			for( Field field : map.keySet() ){
+				try{
 					
-					return resultObjectList;
+					Object resValue = parseValue( result, map.get( field ), field.getType() );
+					if( resValue != null ){
+						assignValueToField( newObj, field, resValue );
+						valueFound = true;
+					}
+					
+				}catch( SQLException sqlex ){
+					// TODO Have no idea how to handle this.( May be we don't have to handle this )
+					// sqlex.printStackTrace();
 				}
-				
-				resultObjectList.add( newObj );
 			}
-		} catch( InstantiationException ie ){
-			ie.printStackTrace();
-		} catch ( IllegalAccessException iae) {
-			iae.printStackTrace();
-		} catch ( SQLException sqle ) {
-			sqle.printStackTrace();
+			if( !valueFound ){
+				
+				return resultObjectList;
+			}
+			
+			resultObjectList.add( newObj );
 		}
 		return resultObjectList;
 	}
@@ -108,6 +99,16 @@ public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) {
 		}
 	}
 	
+	/**
+	 * Converts data from <code>ResultSet</code> to type a given Class type. This function 
+	 * will throws <code>SQLException</code> since that uses the data conversion functionalities 
+	 * from <code>ResultSet</code>.
+	 * @param result Queried result set using a JDBC connection
+	 * @param columnName Label of the column which the value to be converted
+	 * @param typeClass Type of Class which the value should be convert to.
+	 * @return returns a converted value.
+	 * @throws SQLException
+	 */
 	private Object parseValue( ResultSet result, String columnName, Class typeClass ) throws SQLException {
 			
 		if( typeClass.equals( String.class ) ){
@@ -141,6 +142,11 @@ public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) {
 		return null;
 	}
 	
+	/**
+	 * To generate a Field/Column-label pair from <code>ResultField</code> annotation of properties ofGiven Class type 
+	 * @param dataClass
+	 * @return 
+	 */
 	private HashMap<Field, String> getFieldColumnMapping( Class dataClass ){
 		HashMap<Field, String> map = new HashMap<Field, String>();
 
