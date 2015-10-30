@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,9 +17,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.cinergix.db.DBServiceHelper;
+import com.cinergix.mapper.data.AbstractUserMock;
 import com.cinergix.mapper.data.SimpleUserMock;
 import com.cinergix.mapper.data.UnMappedUserMock;
 import com.cinergix.mapper.data.UserMock;
+import com.cinergix.mapper.exception.DataTypeConversionException;
+import com.cinergix.mapper.exception.ObjectCreationException;
+import com.cinergix.mapper.exception.PropertyAccessException;
 
 public class ObjectMapperTest {
 	
@@ -37,9 +42,10 @@ public class ObjectMapperTest {
 		dbHelper.destroyDataBase();
 	}
 	
-	/**
-	 * Test for mapResultSetToObject method
-	 */
+	
+	/****************************************************************************************
+	 * Test for mapResultSetToObject method													*
+	 ****************************************************************************************/
 	@Test
 	public void mapResultSetToObjectShouldReturnEmptyListIfResultSetIsEmpty(){
 		try{
@@ -107,7 +113,7 @@ public class ObjectMapperTest {
 			//List<User> userList = mapper.mapResultSetToObject( result );
 			List<UserMock> userList = mapper.mapResultSetToObject( result, UserMock.class );
 			assertNotNull( userList );
-			assertEquals( "mapResultSetToObject should return empty list if ResultSet is empty", 0, userList.size() );
+			assertEquals( "mapResultSetToObject should return empty list if ResultSet does not have any mapped column", 0, userList.size() );
 			
 		}catch( Exception e ){
 			e.printStackTrace();
@@ -122,8 +128,8 @@ public class ObjectMapperTest {
 			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
 			
 			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
-			assertEquals( "mapResultSetToObject should return a list containing one AnnotationTestUser", 1, userList.size() );
-			assertTrue( "mapResultSetToObject should return a list containing one AnnotationTestUser", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
+			assertEquals( "mapResultSetToObject should return mapped object for given one tuple of value in result set", 1, userList.size() );
+			assertTrue( "mapResultSetToObject should return mapped object for given one tuple of value in result set", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
 			
 		}catch( Exception e ){
 			e.printStackTrace();
@@ -140,9 +146,14 @@ public class ObjectMapperTest {
 			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID' OR id LIKE 'testID2'" );
 			
 			List<SimpleUserMock> userList = mapper.mapResultSetToObject( result, SimpleUserMock.class );
-			assertEquals( "mapResultSetToObject should return a list containing one SimpleUserMock", 2, userList.size() );
-			assertTrue( "mapResultSetToObject should return a list containing one SimpleUserMock", ( "Test Name" ).equals( userList.get( 0 ).getName() ) || ( "Test Name2" ).equals( userList.get( 0 ).getName() )
-																										|| ( "Test Name" ).equals( userList.get( 1 ).getName() ) || ( "Test Name2" ).equals( userList.get( 1 ).getName() ));
+			
+			List<String> expectedStrings = new ArrayList<String>();
+			expectedStrings.add( "Test Name" );
+			expectedStrings.add( "Test Name2" );
+			
+			assertEquals( "mapResultSetToObject should return a list containing two SimpleUserMock", 2, userList.size() );
+			assertTrue( "mapResultSetToObject should return a list containing two SimpleUserMock", expectedStrings.contains( userList.get( 0 ).getName() ) );
+			assertTrue( "mapResultSetToObject should return a list containing two SimpleUserMock", expectedStrings.contains( userList.get( 1 ).getName() ) );
 			dbHelper.updateData( "DELETE FROM user WHERE id LIKE 'testID2'" );
 			
 		}catch( Exception e ){
@@ -150,9 +161,49 @@ public class ObjectMapperTest {
 		}
 	}
 	
-	/**
-	 * Test assignValueToField method
-	 */
+	@Test
+	public void mapResultSetToObjectShouldReturnEmptyListIfThereIsNoMappingColumnLabelFoundInGivenResultSet(){
+		try{
+			
+			Class userClass = UserMock.class;
+			Field[] fields = userClass.getDeclaredFields();
+			
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
+			Class mapperClass = ObjectMapper.class;
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id, name, age FROM user WHERE id LIKE 'testID'" );
+			
+			List<UserMock> list = mapper.mapResultSetToObject( result, userClass );
+			
+			Field fID =userClass.getDeclaredField( "id" );
+			Field fEmail =userClass.getDeclaredField( "email" );
+			
+			assertEquals( "mapResultSetToObject should return empty list if there is no mapping column is found in given result set", 0, list.size() );
+			
+		}catch( NoSuchFieldException e ){
+			e.printStackTrace();
+		}
+	}
+	
+	@Test( expected = ObjectCreationException.class )
+	public void mapResultSetToObjectShouldShouldThrowObjectCreationExceptionIfGivenDataClassIsAbstract(){
+			
+			Class userClass = AbstractUserMock.class;
+			Field[] fields = userClass.getDeclaredFields();
+			
+			ObjectMapper<AbstractUserMock> mapper = new ObjectMapper<AbstractUserMock>();
+			Class mapperClass = ObjectMapper.class;
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, age as user_age FROM user WHERE id LIKE 'testID'" );
+			
+			List<AbstractUserMock> list = mapper.mapResultSetToObject( result, userClass );
+			
+	}
+	
+	
+	/****************************************************************************************
+	 * Test assignValueToField method														*
+	 ****************************************************************************************/
 	@Test
 	public void assignValueToFieldShouldAssignGivenValueToField(){
 		try{
@@ -195,13 +246,10 @@ public class ObjectMapperTest {
 			Method method = mapperClass.getDeclaredMethod( "assignValueToField", Object.class, Field.class, Object.class );
 			method.invoke( mapper, user, field, 20 );
 			System.out.println( "user age " + user.getAge() );
-			assertEquals( "assignValueToField should convert value to the field's type before use it", 20, user.getAge() );
+			assertEquals( "assignValueToField should assign the value to the field", 20, user.getAge() );
 			
 			method.invoke( mapper, user, field, 25 );
-			assertEquals( "assignValueToField should convert value to the field's type before use it", 25, user.getAge() );
-			
-//			method.invoke( mapper, user, field, "test" );
-//			assertEquals( "assignValueToField should convert value to the field's type before use it", null, user.getAge() );
+			assertEquals( "assignValueToField should assign the value to the field", 25, user.getAge() );
 			
 		}catch( NoSuchFieldException e ){
 			e.printStackTrace();
@@ -215,9 +263,32 @@ public class ObjectMapperTest {
 		
 	}
 	
-	/**
-	 * Test parseValue method
-	 */
+	
+	@Test( expected = PropertyAccessException.class )
+	public void assignValueToFieldShouldThrowPropertyAccessExceptionIfAssignValueIsIncompatableTypeOf(){
+		try{
+			
+			UserMock user = new UserMock();
+			Class userClass = UserMock.class;
+			Field field = userClass.getDeclaredField( "age" );
+			
+			( new ObjectMapper<UserMock>(){
+			
+				public void testAssignValueToField( UserMock createdObject, Field field, Object value ){
+					this.assignValueToField( createdObject, field, value );
+				}
+			}).testAssignValueToField( user, field, "Data" );
+			
+		}catch( NoSuchFieldException e ){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	/****************************************************************************************
+	 * Test parseValue method																*
+	 ****************************************************************************************/
 	@Test
 	public void parseValueShouldConvertObjectToStringIfTypeIsStringClass(){
 		try{
@@ -379,7 +450,9 @@ public class ObjectMapperTest {
 		    int month = cal.get(Calendar.MONTH);
 		    int day = cal.get(Calendar.DAY_OF_MONTH);
 			
-			assertTrue( "parseValue should convert the given Object to Date if type is Date class", year == 1985 && month == ( 5 - 1 ) && day == 5 );// In Java Calendar month is starting from 0
+			assertEquals( "parseValue should convert the given Object to Date if type is Date class", 1985, year );// In Java Calendar month is starting from 0
+			assertEquals( "parseValue should convert the given Object to Date if type is Date class", ( 5 - 1 ), month );
+			assertEquals( "parseValue should convert the given Object to Date if type is Date class", 5, day );
 			
 		}catch ( NoSuchMethodException e1 ){
 			e1.printStackTrace();
@@ -417,7 +490,12 @@ public class ObjectMapperTest {
 		    int min = cal.get(Calendar.MINUTE);
 		    int sec = cal.get(Calendar.SECOND);
 			
-			assertTrue( "parseValue should convert the given Timestamp Object to Date if type is Date class", year == 2015 && month == ( 10 - 1 ) && day == 22 && hour == 8 && min == 30 && sec == 20 );// In Java Calendar month is starting from 0
+			assertEquals( "parseValue should convert the given Timestamp Object to Date if type is Date class", 2015, year );// In Java Calendar month is starting from 0
+			assertEquals( "parseValue should convert the given Timestamp Object to Date if type is Date class", ( 10 - 1 ), month );
+			assertEquals( "parseValue should convert the given Timestamp Object to Date if type is Date class", 22, day );
+			assertEquals( "parseValue should convert the given Timestamp Object to Date if type is Date class", 8, hour );
+			assertEquals( "parseValue should convert the given Timestamp Object to Date if type is Date class", 30, min );
+			assertEquals( "parseValue should convert the given Timestamp Object to Date if type is Date class", 20, sec );
 			
 		}catch ( NoSuchMethodException e1 ){
 			e1.printStackTrace();
@@ -430,9 +508,31 @@ public class ObjectMapperTest {
 		}
 	}
 	
-	/**
-	 * Test getFieldColumnMapping method
-	 */
+	@Test( expected = DataTypeConversionException.class )
+	public void parseValueShouldThrowDataTypeConversionExceptionWhenTryingToConvertToIncompetableTypes(){
+		try{
+			
+			ObjectMapper<UserMock> mapper = new ObjectMapper<UserMock>();
+			
+			Class mapperClass = ObjectMapper.class;
+			Method method = mapperClass.getDeclaredMethod( "parseValue", ResultSet.class, String.class, Class.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_age, email as user_email FROM user WHERE id LIKE 'testID'" );
+			result.next();
+			
+			List<UserMock> list = mapper.mapResultSetToObject( result, UserMock.class );
+			
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
+		}catch ( SQLException sqlex) {
+			 sqlex.printStackTrace();
+		}
+	}
+	
+	
+	/****************************************************************************************
+	 * Test getFieldColumnMapping method													*
+	 ****************************************************************************************/
 	@Test
 	public void getFieldColumnMappingShouldReturnMappedSetOfFieldVsColumnNameFromTheAnnotationInHashMap(){
 		try{
@@ -443,10 +543,12 @@ public class ObjectMapperTest {
 			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
 			Class mapperClass = ObjectMapper.class;
 			
-			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class );
+			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class, ResultSet.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age, weight as user_weight, dob as user_dob, last_update as user_last_update FROM user WHERE id LIKE 'testID'" );
 			
 			method.setAccessible(true);
-			HashMap<Field, String> fieldsVsColumns = (HashMap<Field, String>) ( method.invoke( mapper, SimpleUserMock.class ) );
+			HashMap<Field, String> fieldsVsColumns = (HashMap<Field, String>) ( method.invoke( mapper, SimpleUserMock.class, result ) );
 			method.setAccessible(false);
 			
 			assertTrue("getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( "user_name" ).equals( fieldsVsColumns.get( fields[0] ) ) );
@@ -471,13 +573,16 @@ public class ObjectMapperTest {
 			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
 			Class mapperClass = ObjectMapper.class;
 			
-			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class );
+			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class, ResultSet.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age, weight as user_weight, dob as user_dob, last_update as user_last_update FROM user WHERE id LIKE 'testID'" );
 			
 			method.setAccessible(true);
-			HashMap<Field, String> fieldsVsColumns = (HashMap<Field, String>) ( method.invoke( mapper, SimpleUserMock.class ) );
+			HashMap<Field, String> fieldsVsColumns = (HashMap<Field, String>) ( method.invoke( mapper, SimpleUserMock.class, result ) );
 			method.setAccessible(false);
 			
-			assertTrue("getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( fieldsVsColumns.size() == 1 ) && ( "user_name" ).equals( fieldsVsColumns.get( fields[0] ) ) );
+			assertEquals( "getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", 1, fieldsVsColumns.size() );
+			assertTrue( "getFieldColumnMapping should return a mapped set of field Vs Column names( which are in the annotation )", ( "user_name" ).equals( fieldsVsColumns.get( fields[0] ) ) );
 			
 			
 		}catch ( NoSuchMethodException e1 ){
@@ -529,10 +634,12 @@ public class ObjectMapperTest {
 			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
 			Class mapperClass = ObjectMapper.class;
 			
-			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class );
+			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class, ResultSet.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age, weight as user_weight, dob as user_dob, last_update as user_last_update FROM user WHERE id LIKE 'testID'" );
 			
 			method.setAccessible(true);
-			HashMap<Field, String> fieldsVsColumns = ( HashMap<Field, String> ) ( method.invoke( mapper, UserMock.class ) );
+			HashMap<Field, String> fieldsVsColumns = ( HashMap<Field, String> ) ( method.invoke( mapper, UserMock.class, result ) );
 			method.setAccessible(false);
 			
 			Field fID =userClass.getDeclaredField( "id" );
@@ -549,6 +656,163 @@ public class ObjectMapperTest {
 			e2.printStackTrace();
 		}catch( InvocationTargetException e3 ){
 			e3.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void getFieldColumnMappingShouldReturnEmptyMapIfThereIsNoMappingColumnLabelFoundInGivenResultSet(){
+		try{
+			
+			Class userClass = UserMock.class;
+			Field[] fields = userClass.getDeclaredFields();
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			Class mapperClass = ObjectMapper.class;
+			
+			Method method = mapperClass.getDeclaredMethod( "getFieldColumnMapping", Class.class, ResultSet.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT * FROM user WHERE id LIKE 'testID'" );
+			
+			method.setAccessible(true);
+			HashMap<Field, String> fieldsVsColumns = ( HashMap<Field, String> ) ( method.invoke( mapper, UserMock.class, result ) );
+			method.setAccessible(false);
+			
+			Field fID =userClass.getDeclaredField( "id" );
+			Field fEmail =userClass.getDeclaredField( "email" );
+			
+			assertEquals( "getFieldColumnMapping should return empty map if there is no mapping column is found in given result set", 0, fieldsVsColumns.size() );
+			
+		}catch( NoSuchFieldException e ){
+			e.printStackTrace();
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
+		}catch ( IllegalAccessException e2 ){
+			e2.printStackTrace();
+		}catch( InvocationTargetException e3 ){
+			e3.printStackTrace();
+		}
+	}
+	
+	
+	/****************************************************************************************
+	 * checkColumnLabelExist tests															*
+	 ****************************************************************************************/
+	@Test
+	public void checkColumnLabelExistShouldReturnTrueIfGivenColumnLabelExistInGivenResultset(){
+		try{
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			Class mapperClass = ObjectMapper.class;
+			
+			Method method = mapperClass.getDeclaredMethod( "checkColumnLabelExist", ResultSet.class, String.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name FROM user WHERE id LIKE 'testID'" );
+			
+			method.setAccessible(true);
+			boolean exist = ( Boolean ) ( method.invoke( mapper, result, "user_name" ) );
+			method.setAccessible(false);
+			assertTrue( "checkColumnLabelExist should return true if given label exist in given result set", exist );
+			
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
+		}catch ( IllegalAccessException e2 ){
+			e2.printStackTrace();
+		}catch( InvocationTargetException e3 ){
+			e3.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void checkColumnLabelExistShouldReturnFalseIfGivenColumnLabelDoesNotExistInGivenResultset(){
+		try{
+			
+			ObjectMapper<SimpleUserMock> mapper = new ObjectMapper<SimpleUserMock>();
+			Class mapperClass = ObjectMapper.class;
+			
+			Method method = mapperClass.getDeclaredMethod( "checkColumnLabelExist", ResultSet.class, String.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name FROM user WHERE id LIKE 'testID'" );
+			
+			method.setAccessible(true);
+			boolean exist = ( Boolean ) ( method.invoke( mapper, result, "name" ) );
+			method.setAccessible(false);
+			assertFalse( "checkColumnLabelExist should return false if given label does not exist in given result set", exist );
+			
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
+		}catch ( IllegalAccessException e2 ){
+			e2.printStackTrace();
+		}catch( InvocationTargetException e3 ){
+			e3.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void checkColumnLabelExistShouldReturnFalseIfGivenResultSetIsNull(){
+		try{
+			
+			Class mapperClass = ObjectMapper.class;
+			
+			Method method = mapperClass.getDeclaredMethod( "checkColumnLabelExist", ResultSet.class, String.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name FROM user WHERE id LIKE 'testID'" );
+			
+			boolean val = ( new ObjectMapper<SimpleUserMock>(){
+				public boolean testCheckColumnLabelExist( ResultSet result, String columnLabel ){
+					return this.checkColumnLabelExist( result, columnLabel );
+				}
+			} ).testCheckColumnLabelExist( null, "user_name" );
+			
+			assertFalse( "checkColumnLabelExist should return false if given ResultSet is null", val );
+			
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void checkColumnLabelExistShouldReturnFalseIfGivenColumnNameIsNull(){
+		try{
+			
+			Class mapperClass = ObjectMapper.class;
+			
+			Method method = mapperClass.getDeclaredMethod( "checkColumnLabelExist", ResultSet.class, String.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name FROM user WHERE id LIKE 'testID'" );
+			
+			boolean val = ( new ObjectMapper<SimpleUserMock>(){
+				public boolean testCheckColumnLabelExist( ResultSet result, String columnLabel ){
+					return this.checkColumnLabelExist( result, columnLabel );
+				}
+			} ).testCheckColumnLabelExist( result, null );
+			
+			assertFalse( "checkColumnLabelExist should return false if given column name is null", val );
+			
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void checkColumnLabelExistShouldReturnFalseIfGivenColumnNameIsEmptyString(){
+		try{
+			
+			Class mapperClass = ObjectMapper.class;
+			
+			Method method = mapperClass.getDeclaredMethod( "checkColumnLabelExist", ResultSet.class, String.class );
+			
+			ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name FROM user WHERE id LIKE 'testID'" );
+			
+			boolean val = ( new ObjectMapper<SimpleUserMock>(){
+				public boolean testCheckColumnLabelExist( ResultSet result, String columnLabel ){
+					return this.checkColumnLabelExist( result, columnLabel );
+				}
+			} ).testCheckColumnLabelExist( result, "" );
+			
+			assertFalse( "checkColumnLabelExist should return false if given column name is null", val );
+			
+		}catch ( NoSuchMethodException e1 ){
+			e1.printStackTrace();
 		}
 	}
 }
