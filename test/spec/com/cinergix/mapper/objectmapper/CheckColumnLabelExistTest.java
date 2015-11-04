@@ -105,18 +105,18 @@ public class CheckColumnLabelExistTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void itShouldReturnTrueAndShouldNotThrowExceptionWhenThereAreTwoColumnsWithSameLabelInGivenResultSet(){
+	public void itShouldReturnTrueWhenThereAreTwoColumnsWithSameLabelInGivenResultSet(){
 		
 		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, name as user_id FROM user WHERE id LIKE 'testID'" );
 		
 		boolean exist = this.invokeCheckColumnLabelExist( result, "user_id" );
 		
-		assertTrue( "checkColumnLabelExist should return false if given column name is is first column in result", exist );
+		assertTrue( "checkColumnLabelExist should return true when there are two columns with same label in given ResultSet", exist );
 		
 	}
 	
 	@Test
-	public void itShouldReturnTrueAndShouldNotThrowExceptionWhenThereAreTwoColumnsWithSameLabelFromTwoDifferentTable(){
+	public void itShouldReturnTrueWhenThereAreTwoColumnsWithSameLabelFromTwoDifferentTabel(){
 		
 		createMockTableManager();
 		
@@ -124,17 +124,17 @@ public class CheckColumnLabelExistTest extends ObjectMapperTestAbstract {
 		
 		boolean exist = this.invokeCheckColumnLabelExist( result, "name" );
 		
-		assertTrue( "checkColumnLabelExist should return false if given column name is is first column in result", exist );
+		assertTrue( "checkColumnLabelExist should return true when there are two column with same label from two different tabel", exist );
 		
 		exist = this.invokeCheckColumnLabelExist( result, "id" );
 		
-		assertTrue( "checkColumnLabelExist should return false if given column name is is first column in result", exist );
+		assertTrue( "checkColumnLabelExist should return true when there are two column with same label from two different tabel", exist );
 		
 		dropMockTableManager();
 	}
 	
 	@Test
-	public void itShouldReturnTrueAndShouldNotThrowExceptionWhenThereAreTwoColumnsWithSameLabelFromTwoDifferentTableAlais(){
+	public void itShouldReturnTrueWhenThereAreTwoColumnsWithSameLabelFromTwoDifferentTableAlais(){
 		
 		createMockTableManager();
 		
@@ -142,11 +142,11 @@ public class CheckColumnLabelExistTest extends ObjectMapperTestAbstract {
 		
 		boolean exist = this.invokeCheckColumnLabelExist( result, "name" );
 		
-		assertTrue( "checkColumnLabelExist should return false if given column name is is first column in result", exist );
+		assertTrue( "checkColumnLabelExist should return true when there are two columns with same label from two different table alias", exist );
 		
 		exist = this.invokeCheckColumnLabelExist( result, "id" );
 		
-		assertTrue( "checkColumnLabelExist should return false if given column name is is first column in result", exist );
+		assertTrue( "checkColumnLabelExist should return true when there are two columns with same label from two different table alias", exist );
 		
 		dropMockTableManager();
 	}
