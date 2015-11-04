@@ -220,11 +220,10 @@ public class ObjectMapper<T> {
 		}catch( SQLException ex ){
 			
 			if( ex.getMessage().matches( "Column(.*)not\\s+found\\." ) ){
-				// This error will throw when the column is not found in given result.
-				// TODO This exception is handled based on the message in the exception. This can be improved by
-				// finding better way to identify the cause of exception.
+				// "Column column_label not found." message is expected when filtering the column.
+				// If the above message is thrown that means there is no such column found in given ResultSet.
 			} else { 
-				throw new SQLException( "Unable to find column name", ex );
+				throw ex;
 			}
 		}
 		
