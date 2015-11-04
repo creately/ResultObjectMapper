@@ -183,7 +183,7 @@ public class ObjectMapper<T> {
 	 * @param dataClass
 	 * @return 
 	 */
-	protected HashMap<Field, String> getFieldColumnMapping( Class dataClass, ResultSet result ){
+	protected HashMap<Field, String> getFieldColumnMapping( Class dataClass, ResultSet result ) throws SQLException{
 		
 		if( dataClass == null || result == null ){
 			return null;
@@ -207,7 +207,7 @@ public class ObjectMapper<T> {
 		return map;
 	}
 	
-	protected boolean checkColumnLabelExist( ResultSet result, String columnLabel ){
+	protected boolean checkColumnLabelExist( ResultSet result, String columnLabel ) throws SQLException{
 		
 		if( result == null || columnLabel == null || columnLabel.trim() =="" ){
 			return false;
@@ -216,8 +216,15 @@ public class ObjectMapper<T> {
 		try{
 			
 			return result.findColumn( columnLabel ) > 0;
+			
 		}catch( SQLException ex ){
-			// This exception thrown only when there is no matching column found in the result set.
+			
+			if( ex.getMessage().matches( "Column(.*)not\\s+found\\." ) ){
+				// "Column column_label not found." message is expected when filtering the column.
+				// If the above message is thrown that means there is no such column found in given ResultSet.
+			} else { 
+				throw ex;
+			}
 		}
 		
 		return false;
