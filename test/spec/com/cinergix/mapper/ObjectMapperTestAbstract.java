@@ -1,7 +1,9 @@
 package com.cinergix.mapper;
 
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -38,6 +40,10 @@ public abstract class ObjectMapperTestAbstract {
 		
 		public boolean testCheckColumnLabelExist( ResultSet result, String columnLabel ) throws SQLException{
 			return this.checkColumnLabelExist( result, columnLabel );
+		}
+		
+		public HashMap<Field, String> testGetFieldColumnMapping(Class dataClass, ResultSet result ) throws SQLException{
+			return this.getFieldColumnMapping( dataClass, result );
 		}
 	}
 }
