@@ -72,6 +72,17 @@ public class DBServiceHelper {
 		}
 	}
 	
+	public boolean checkTableExist( String tableName ){
+		try{
+			
+			ResultSet result = this.getResultSetForQuery( "SHOW TABLES LIKE '" + tableName +  "'" );
+			return result.next();
+		}catch( SQLException e ){
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	public void createTestDatabase(){
 		
 		// To create the connection
