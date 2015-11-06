@@ -15,7 +15,7 @@ import com.cinergix.mapper.ObjectMapper;
 
 public class CheckColumnLabelExistTest extends ObjectMapperTestAbstract {
 	
-	private ExtendedObjectMapper mapper = new ExtendedObjectMapper();
+	private TestableObjectMapper mapper = new TestableObjectMapper();
 	
 	private boolean invokeCheckColumnLabelExist( ResultSet result, String columnLabel ){
 		try{
@@ -27,23 +27,6 @@ public class CheckColumnLabelExistTest extends ObjectMapperTestAbstract {
 			fail( e.getMessage() );
 		}
 		return false;
-	}
-	
-	private void createMockTableManager(){
-		
-		String tableCreateSQL = "CREATE TABLE manager " +
-                "(id VARCHAR(255) not NULL, " +
-                " name VARCHAR(255), " +
-                " email VARCHAR(255), " +
-                " PRIMARY KEY ( id ))";
-				
-		dbHelper.updateData( tableCreateSQL );
-		// To insert a test data
-		dbHelper.updateData("INSERT INTO manager ( id, name, email ) VALUES ( 'testID', 'Test Name', 'manager@cinergix.com' )");
-	}
-	
-	private void dropMockTableManager(){
-		dbHelper.updateData( "DROP TABLE manager" );
 	}
 
 	/****************************************************************************************
