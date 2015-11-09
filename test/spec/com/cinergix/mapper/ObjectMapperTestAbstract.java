@@ -34,6 +34,11 @@ public abstract class ObjectMapperTestAbstract {
 	
 	protected void createMockTableManager(){
 		
+		if( dbHelper.checkTableExist( "manager" ) ){
+			
+			dropMockTableManager();
+		}
+		
 		String tableCreateSQL = "CREATE TABLE manager " +
                 "(id VARCHAR(255) not NULL, " +
                 " name VARCHAR(255), " +
@@ -46,6 +51,7 @@ public abstract class ObjectMapperTestAbstract {
 	}
 	
 	protected void dropMockTableManager(){
+		
 		dbHelper.updateData( "DROP TABLE manager" );
 	}
 	
@@ -83,6 +89,10 @@ public abstract class ObjectMapperTestAbstract {
 				fail( e.getMessage() );
 			}
 			return null;
+		}
+		
+		public Object testParseValue( ResultSet result, String columnName, Class typeClass ) {
+			return this.parseValue( result, columnName, typeClass );
 		}
 	}
 }

@@ -140,6 +140,11 @@ public class ObjectMapper<T> {
 	 * @throws SQLException
 	 */
 	protected Object parseValue( ResultSet result, String columnName, Class typeClass ) {
+		
+		if( result == null || columnName == null || columnName.trim() == "" || typeClass == null ){
+			return null;
+		}
+		
 		try{
 			
 			if( typeClass.equals( String.class ) ){
@@ -172,6 +177,7 @@ public class ObjectMapper<T> {
 			}
 			
 		}catch( SQLException ex ){
+			
 			throw new DataTypeConversionException( "Unable to convert the value in " + columnName + " as " + typeClass.getName(), ex );
 		}
 		
