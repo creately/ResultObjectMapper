@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,37 +71,39 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	@Test
 	public void itConvertObjectToStringIfTypeIsStringClass(){
 		
-		assertTrue( "parseValue should convert given Object to String if type is String", ( "Test Name" ).equals( (String)( mapper.testParseValue( result, "user_name", String.class ) ) ) );
+		assertEquals( "parseValue should convert given Object to String if type is String", "Test Name", mapper.testParseValue( result, "user_name", String.class ) );
 	}
 	
 	@Test
 	public void parseValueShouldConvertObjectToIntegerIfTypeIsIntegerClass(){
 		
-		assertEquals( "parseValue should convert given object to Integer if type is Integer", (Integer)25, (Integer)( mapper.testParseValue( result, "user_age", Integer.class ) ) );
-		assertEquals( "parseValue should convert given object to int if type is int", 25, (int)( mapper.testParseValue( result, "user_age", int.class ) ) );
+		assertEquals( "parseValue should convert given object to Integer if type is Integer", 25, mapper.testParseValue( result, "user_age", Integer.class ) );
+		assertEquals( "parseValue should convert given object to int if type is int", 25, mapper.testParseValue( result, "user_age", int.class ) );
 	}
 	
 	@Test
 	public void parseValueShouldConvertObjectToLongIfTypeIsLongClass(){
 		
-		assertEquals( "parseValue should convert given object to Integer if type is Integer", 25, (long)( mapper.testParseValue( result, "user_age", Long.class ) ) );
-		assertEquals( "parseValue should convert given object to Integer if type is Integer", 25, (long)( mapper.testParseValue( result, "user_age", long.class ) ) );
-			
+		Object obj = 25;
+		assertEquals( "Test ", 25, obj );
+		assertEquals( "parseValue should convert given object to Integer if type is Integer", 25L, mapper.testParseValue( result, "user_age", Long.class ) );
+		assertEquals( "parseValue should convert given object to Integer if type is Integer", 25L, mapper.testParseValue( result, "user_age", long.class ) );
+		
 	}
 	
 	@Test
 	public void parseValueShouldConvertObjectToDoubleIfTypeIsDoubleClass(){
 		
-		assertEquals( "parseValue should convert given object to Double if type is Double", 65.52, (double)( mapper.testParseValue( result, "user_weight", Double.class ) ), 0 );
-		assertEquals( "parseValue should convert given object to double if type is double", 65.52, (double)( mapper.testParseValue( result, "user_weight", double.class ) ), 0 );
+		assertEquals( "parseValue should convert given object to Double if type is Double", 65.52, mapper.testParseValue( result, "user_weight", Double.class ) );
+		assertEquals( "parseValue should convert given object to double if type is double", 65.52, mapper.testParseValue( result, "user_weight", double.class ) );
 			
 	}
 	
 	@Test
 	public void parseValueShouldConvertObjectToFloatIfTypeIsFloatClass(){
 		
-		assertEquals( "parseValue should convert given object to Float if type is Float", (float)65.52, (float)( mapper.testParseValue( result, "user_weight", Float.class ) ), 0 );
-		assertEquals( "parseValue should convert given object to float if type is float", (float)65.52, (float)( mapper.testParseValue( result, "user_weight", float.class ) ), 0 );
+		assertEquals( "parseValue should convert given object to Float if type is Float", 65.52F, mapper.testParseValue( result, "user_weight", Float.class ) );
+		assertEquals( "parseValue should convert given object to float if type is float", 65.52F, mapper.testParseValue( result, "user_weight", float.class ) );
 		
 	}
 	
@@ -116,8 +120,8 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 			fail( e.getMessage() );
 		}
 		
-		assertTrue( "parseValue should convert given object to Boolean if type is Boolean", ( Boolean )mapper.testParseValue( rs, "user_married", Boolean.class ) );
-		assertTrue( "parseValue should convert given object to boolean if type is booolean", ( boolean )mapper.testParseValue( rs, "user_married", boolean.class ) );
+		assertEquals( "parseValue should convert given object to Boolean if type is Boolean", true, mapper.testParseValue( rs, "user_married", Boolean.class ) );
+		assertEquals( "parseValue should convert given object to boolean if type is booolean", true, mapper.testParseValue( rs, "user_married", boolean.class ) );
 		
 	}
 	
@@ -126,16 +130,19 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 		
 		Date dob = (Date)( mapper.testParseValue( result, "user_dob", Date.class ) );
 		
-	    Calendar cal = Calendar.getInstance();
-	    cal.setTime( dob );
-	    int year = cal.get(Calendar.YEAR);
-	    int month = cal.get(Calendar.MONTH);
-	    int day = cal.get(Calendar.DAY_OF_MONTH);
+	    Date d = null;
+	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	    try{
+	    	
+	    	d = sdf.parse( "05/05/1985" );
+	    	
+	    }catch( ParseException e ){
+	    	e.printStackTrace();
+	    	fail( e.getMessage() );
+	    }
+	    
+	    assertEquals( "parseValue should convert the given Object to Date and the date should be to the date in the data", d, dob );
 		
-		assertEquals( "parseValue should convert the given Object to Date and the year shoul be equal to the year in the data", 1985, year );
-		assertEquals( "parseValue should convert the given Object to Date and the month index shoul be equal to the month - 1 in the data", ( 5 - 1 ), month ); // In Java Calendar month is starting from 0
-		assertEquals( "parseValue should convert the given Object to Date and the day shoul be equal to the day in the data", 5, day );
-			
 	}
 	
 	@Test
@@ -143,21 +150,19 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 		
 		Date dob = (Date)( mapper.testParseValue( result, "user_last_update", Date.class ) );
 		
-	    Calendar cal = Calendar.getInstance();
-	    cal.setTime( dob );
-	    int year = cal.get(Calendar.YEAR);
-	    int month = cal.get(Calendar.MONTH);
-	    int day = cal.get(Calendar.DAY_OF_MONTH);
-	    int hour = cal.get(Calendar.HOUR_OF_DAY);
-	    int min = cal.get(Calendar.MINUTE);
-	    int sec = cal.get(Calendar.SECOND);
+		Date d = null;
 		
-		assertEquals( "parseValue should convert the given Timestamp Object to Date and the year shoul be equal to the year in the data", 2015, year );
-		assertEquals( "parseValue should convert the given Timestamp Object to Date and the month index shoul be equal to the month - 1 in the data", ( 10 - 1 ), month ); // In Java Calendar month is starting from 0
-		assertEquals( "parseValue should convert the given Timestamp Object to Date and day shoul be equal to the day in the data", 22, day );
-		assertEquals( "parseValue should convert the given Timestamp Object to Date and the hour shoul be equal to the hour in the data", 8, hour );
-		assertEquals( "parseValue should convert the given Timestamp Object to Date and the minute shoul be equal to the minute in the data", 30, min );
-		assertEquals( "parseValue should convert the given Timestamp Object to Date and the seconds shoul be equal to the seconds in the data", 20, sec );
+	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	    try{
+	    	
+	    	d = sdf.parse( "22/10/2015 08:30:20" );
+	    	
+	    }catch( ParseException e ){
+	    	e.printStackTrace();
+	    	fail( e.getMessage() );
+	    }
+	    
+	    assertEquals( "parseValue should convert the given Object to Date and the date should be to the date in the data", d, dob );
 		
 	}
 	
@@ -180,8 +185,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 			fail( e.getMessage() );
 		}
 		
-		double weight = ( double )( mapper.testParseValue( result, "user_weight", double.class ) );
-		assertEquals( "parseValue should return converted value of first matched column's value", 65.52, weight, 0 );
+		assertEquals( "parseValue should return converted value of first matched column's value", 65.52, mapper.testParseValue( result, "user_weight", double.class ) );
 	}
 	
 	@Test
@@ -198,8 +202,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 			fail( e.getMessage() );
 		}
 		
-		String email = ( String )( mapper.testParseValue( rs, "email", String.class ) );
-		assertTrue( "parseValue should return converted value of first matched column's value even if there are more than one column from different table", ( "test@cinergix.com" ).equals( email ) );
+		assertEquals( "parseValue should return converted value of first matched column's value even if there are more than one column from different table", "test@cinergix.com", mapper.testParseValue( rs, "email", String.class ) );
 		
 		dropMockTableManager();
 	}
@@ -218,8 +221,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 			fail( e.getMessage() );
 		}
 		
-		String email = ( String )( mapper.testParseValue( rs, "email", String.class ) );
-		assertTrue( "parseValue should return converted value of first matched column's value even if there are more than one column from different table with alais", ( "test@cinergix.com" ).equals( email ) );
+		assertEquals( "parseValue should return converted value of first matched column's value even if there are more than one column from different table with alais", "test@cinergix.com", mapper.testParseValue( rs, "email", String.class ) );
 		
 		dropMockTableManager();
 	}
