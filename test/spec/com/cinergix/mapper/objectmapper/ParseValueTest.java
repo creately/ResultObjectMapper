@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.cinergix.mapper.ObjectMapper;
 import com.cinergix.mapper.ObjectMapperTestAbstract;
+import com.cinergix.mapper.data.FieldTestUserMock;
 import com.cinergix.mapper.data.SimpleUserMock;
 import com.cinergix.mapper.data.UserMock;
 import com.cinergix.mapper.exception.DataTypeConversionException;
@@ -55,10 +56,10 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 			
 	}
 	@Test
-	public void itShouldReturnNullIfGivenColumnLabelIsNullOrEmptyIsNull(){
+	public void itShouldReturnNullIfGivenColumnLabelIsNullOrEmptyString(){
 		
 		assertNull( "parseValue should return null if given column label is null", mapper.testParseValue( result, null, String.class ) );
-		assertNull( "parseValue should return null if given column label is empty", mapper.testParseValue( result, "", String.class ) );
+		assertNull( "parseValue should return null if given column label is empty string", mapper.testParseValue( result, "", String.class ) );
 			
 	}
 	@Test
@@ -69,20 +70,20 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void itConvertObjectToStringIfTypeIsStringClass(){
+	public void itShouldConvertObjectToStringIfTypeIsStringClass(){
 		
 		assertEquals( "parseValue should convert given Object to String if type is String", "Test Name", mapper.testParseValue( result, "user_name", String.class ) );
 	}
 	
 	@Test
-	public void parseValueShouldConvertObjectToIntegerIfTypeIsIntegerClass(){
+	public void itShouldConvertObjectToIntegerIfTypeIsIntegerClass(){
 		
 		assertEquals( "parseValue should convert given object to Integer if type is Integer", 25, mapper.testParseValue( result, "user_age", Integer.class ) );
 		assertEquals( "parseValue should convert given object to int if type is int", 25, mapper.testParseValue( result, "user_age", int.class ) );
 	}
 	
 	@Test
-	public void parseValueShouldConvertObjectToLongIfTypeIsLongClass(){
+	public void itShouldConvertObjectToLongIfTypeIsLongClass(){
 		
 		Object obj = 25;
 		assertEquals( "Test ", 25, obj );
@@ -92,7 +93,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void parseValueShouldConvertObjectToDoubleIfTypeIsDoubleClass(){
+	public void itShouldConvertObjectToDoubleIfTypeIsDoubleClass(){
 		
 		assertEquals( "parseValue should convert given object to Double if type is Double", 65.52, mapper.testParseValue( result, "user_weight", Double.class ) );
 		assertEquals( "parseValue should convert given object to double if type is double", 65.52, mapper.testParseValue( result, "user_weight", double.class ) );
@@ -100,7 +101,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void parseValueShouldConvertObjectToFloatIfTypeIsFloatClass(){
+	public void itShouldConvertObjectToFloatIfTypeIsFloatClass(){
 		
 		assertEquals( "parseValue should convert given object to Float if type is Float", 65.52F, mapper.testParseValue( result, "user_weight", Float.class ) );
 		assertEquals( "parseValue should convert given object to float if type is float", 65.52F, mapper.testParseValue( result, "user_weight", float.class ) );
@@ -108,7 +109,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void parseValueShouldConvertObjectToFloatIfTypeIsBooleanClass(){
+	public void itShouldConvertObjectToBooleanIfTypeIsBooleanClass(){
 		
 		ResultSet rs = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, TRUE as user_married FROM user WHERE id LIKE 'testID'" );
 		
@@ -126,7 +127,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void parseValueShouldConvertObjectToDateIfTypeIsDateClass(){
+	public void itShouldConvertObjectToDateIfTypeIsDateClass(){
 		
 		Date dob = (Date)( mapper.testParseValue( result, "user_dob", Date.class ) );
 		
@@ -146,7 +147,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void parseValueShouldConvertTimestampObjectToDateIfTypeIsDateClass(){
+	public void itShouldConvertTimestampObjectToDateIfTypeIsDateClass(){
 		
 		Date dob = (Date)( mapper.testParseValue( result, "user_last_update", Date.class ) );
 		
@@ -167,13 +168,13 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test( expected = DataTypeConversionException.class )
-	public void parseValueShouldThrowDataTypeConversionExceptionWhenTryingToConvertToIncompetableTypes(){
+	public void itShouldThrowDataTypeConversionExceptionWhenTryingToConvertToIncompetableTypes(){
 		
 		mapper.testParseValue( result, "user_name", int.class );
 	}
 	
 	@Test
-	public void itShouldConvertAndReturnFirstMatchedColumnValueevenIfThereIsMoreThanOneColumn(){
+	public void itShouldConvertAndReturnFirstMatchedColumnValueEvenIfThereIsMoreThanOneColumn(){
 		
 		ResultSet rs = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age, weight as user_weight, age as user_weight FROM user WHERE id LIKE 'testID'" );
 		
@@ -189,7 +190,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void itShouldConvertAndReturnFirstMatchedColumnValueevenIfThereIsMoreThanOneColumnFromDifferentTable(){
+	public void itShouldConvertAndReturnFirstMatchedColumnValueEvenIfThereIsMoreThanOneColumnFromDifferentTable(){
 		createMockTableManager();
 		
 		ResultSet rs = dbHelper.getResultSetForQuery( "SELECT user.id, user.name, user.email, manager.id, manager.name, manager.email FROM user INNER JOIN manager ON user.id = manager.id WHERE user.id LIKE 'testID'" );
@@ -208,7 +209,7 @@ public class ParseValueTest extends ObjectMapperTestAbstract {
 	}
 	
 	@Test
-	public void itShouldConvertAndReturnFirstMatchedColumnValueevenIfThereIsMoreThanOneColumnFromDifferentTableWithAlais(){
+	public void itShouldConvertAndReturnFirstMatchedColumnValueEvenIfThereIsMoreThanOneColumnFromDifferentTableWithAlais(){
 		createMockTableManager();
 		
 		ResultSet rs = dbHelper.getResultSetForQuery( "SELECT u.id, u.name, u.email, m.id, m.name, m.email FROM user u INNER JOIN manager m ON u.id = m.id WHERE u.id LIKE 'testID'" );
