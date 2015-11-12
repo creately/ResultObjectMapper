@@ -31,6 +31,8 @@ public class UserMock {
 	@ResultObject
 	@ResultField( "manager" )
 	private SimpleUserMock manager;
+	@ResultField( "user_married" )
+	private boolean married;
 	
 	public String getId() {
 		return id;
@@ -61,6 +63,24 @@ public class UserMock {
 	}
 	public void setManager(SimpleUserMock manager) {
 		this.manager = manager;
+	}
+	public double getWeight() {
+		return weight;
+	}
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+	public Date getDob() {
+		return dob;
+	}
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 	
 }

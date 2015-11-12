@@ -1,6 +1,7 @@
 package com.cinergix.mapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -117,16 +118,32 @@ public class ObjectMapper<T> {
 	}
 	
 	protected void assignValueToField( T createdObject, Field field, Object value ){
+		
+		if( createdObject == null || field == null ){
+			return;
+		}
+		
+		if( !field.getDeclaringClass().equals( createdObject.getClass() ) ) {
+			throw new PropertyAccessException( "Can not assign value to a field " + field.getName() + " of Type " + field.getDeclaringClass().getName() + " to instance of type " + createdObject.getClass().getName() );
+		}
+		
+		if( Modifier.isFinal( field.getModifiers() ) ){
+			throw new PropertyAccessException( "Can not assign value to a final field " + field.getName() + " of " + createdObject.getClass().getName() );
+		}
+		
+		field.setAccessible( true );
+		
 		try{
 			
-			field.setAccessible( true );
 			field.set( createdObject, value );
-			field.setAccessible( false );
+			
 		} catch( IllegalAccessException illAccEx ){
-			throw new PropertyAccessException( "Unable to access property " + field.getName() + " of " + createdObject.getClass().getName(), illAccEx );
+			throw new PropertyAccessException( "Unable to access property " + field.getName() + " of " + createdObject.getClass().getName() + " " + illAccEx.getMessage(), illAccEx );
 		} catch ( IllegalArgumentException illArgEx) {
-			throw new PropertyAccessException( "Unable to access property " + field.getName() + " of " + createdObject.getClass().getName(), illArgEx );
+			throw new PropertyAccessException( "Unable to access property " + field.getName() + " of " + createdObject.getClass().getName() + " " + illArgEx.getMessage(), illArgEx );
 		}
+		
+		field.setAccessible( false );
 	}
 	
 	/**

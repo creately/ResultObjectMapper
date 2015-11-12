@@ -94,5 +94,9 @@ public abstract class ObjectMapperTestAbstract {
 		public Object testParseValue( ResultSet result, String columnName, Class typeClass ) {
 			return this.parseValue( result, columnName, typeClass );
 		}
+		
+		public void testAssignValueToField( T createdObject, Field field, Object value ){
+			this.assignValueToField( createdObject, field, value );
+		}
 	}
 }
