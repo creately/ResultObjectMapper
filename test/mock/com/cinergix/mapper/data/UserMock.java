@@ -18,7 +18,7 @@ public class UserMock {
 	@ResultField( "user_name" )
 	@ResultTransformer( "getFirstName" )
 	private String name;
-	@ResultField( "user_email" )
+	@ResultField( { "user_email", "user_office_mail", "user_personal_mail" } )
 	private String email;
 	@ResultField( "user_age" )
 	private int age;

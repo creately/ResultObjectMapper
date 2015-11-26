@@ -33,6 +33,22 @@ public class ResultFieldTest {
 			e.printStackTrace();
 		}
 		assertNotNull( "value Property Of ResultField Annotation Should Return Correct Value Specified In The Annotation", field.getAnnotation( ResultField.class ) );
-		assertEquals( "value property of ResultField annotation should return correct value specified in the annotaion", "user_name", field.getAnnotation( ResultField.class ).value() );
+		assertEquals( "value property of ResultField annotation should return correct value specified in the annotaion", "user_name", field.getAnnotation( ResultField.class ).value()[0] );
+	}
+	
+	@Test
+	public void valuePropertyOfResultFieldAnnotationShouldReturnAnArrayOfCorrectValueSpecifiedInTheAnnotation(){
+		Class userClass = UserMock.class;
+		Field field = null;
+		try{
+		
+			field = userClass.getDeclaredField( "email" );
+		}catch ( NoSuchFieldException e ){
+			e.printStackTrace();
+		}
+		
+		String[] nameAnnotationValue = { "user_email", "user_office_mail", "user_personal_mail" };
+		assertNotNull( "value Property Of ResultField Annotation Should Return Correct Value Specified In The Annotation", field.getAnnotation( ResultField.class ) );
+		assertArrayEquals( "value property of ResultField annotation should return correct value specified in the annotaion", nameAnnotationValue, field.getAnnotation( ResultField.class ).value() );
 	}
 }

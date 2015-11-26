@@ -217,12 +217,13 @@ public class ObjectMapper<T> {
 		for( Field field : dataClass.getDeclaredFields() ){
 			
 			ResultField resultAnnotation = field.getAnnotation( ResultField.class );
-			if( resultAnnotation != null ){
+			if( resultAnnotation != null && resultAnnotation.value() != null ){
 				
-				String sqlFieldName = resultAnnotation.value();
-				
-				if( checkColumnLabelExist( result, sqlFieldName ) ){
-					map.put( field, sqlFieldName );
+				for( String sqlFieldName : resultAnnotation.value() ) {
+					
+					if( map.get( field ) == null && checkColumnLabelExist( result, sqlFieldName ) ){
+						map.put( field, sqlFieldName );
+					}
 				}
 			}
 		}
