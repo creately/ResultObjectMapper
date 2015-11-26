@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -97,6 +98,19 @@ public abstract class ObjectMapperTestAbstract {
 		
 		public void testAssignValueToField( T createdObject, Field field, Object value ){
 			this.assignValueToField( createdObject, field, value );
+		}
+		
+		public List<T> testMapResultSetToObject( ResultSet result, Class<T> dataClass ) {
+			try{
+				
+				return this.mapResultSetToObject( result, dataClass );
+				
+			}catch( SQLException ex ){
+				ex.printStackTrace();
+				fail();
+			}
+			
+			return null;
 		}
 	}
 }

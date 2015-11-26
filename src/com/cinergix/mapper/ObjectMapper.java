@@ -46,74 +46,74 @@ public class ObjectMapper<T> {
 	 * @param dataClass Type of object in list which is returned by this method.
 	 * @return This method returns a list of object f type <code>T</code>
 	 */
-	public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) {
+	public List<T> mapResultSetToObject( ResultSet result, Class<T> dataClass ) throws SQLException {
 		
-		if( result == null || dataClass == null  || dataClass.getAnnotation( ResultMapped.class ) == null ){
+		if( result == null || dataClass == null  || ( !dataClass.isAnnotationPresent( ResultMapped.class ) ) ){
 			return null;
+		}
+		
+		if( Modifier.isInterface( dataClass.getModifiers() ) ) {
+			throw new ObjectCreationException( "Given class " + dataClass.getName() + " is an Interface. dataClass should be instantiable." );
+		} else if( Modifier.isAbstract( dataClass.getModifiers() ) ){
+			throw new ObjectCreationException( "Given class " + dataClass.getName() + " is an Abstract class. dataClass should be instantiable." );
 		}
 		
 		List<T> resultObjectList = new ArrayList<T>();
 		
-		try{
-		
-			// return empty list if the result does not have any values.
-			result.last();
-			if( result.getRow() == 0 ){
-				return resultObjectList;
-			}
-			result.beforeFirst();
-			
-			// Get the mapped values of given class and the result
-			HashMap< Field, String > map = getFieldColumnMapping( dataClass, result );
-			
-			if( map == null ){
-				
-				// If map is null then return null( dataClass or result is null ).
-				return null;
-				
-			} else if( map.size() == 0 ){
-				
-				// Map size 0 means that the map is empty the no need to go further and return empty list. 
-				return resultObjectList;
-			}
-			
-			T newObj = null;
-			
-			// Iterate through result
-			while( result.next() ) {
-				
-				// Create instance of DataClass to populate the data
-				//T newObj = (T) dataClass.newInstance();
-				
-				for( Field field : map.keySet() ){
-						
-					Object resValue = parseValue( result, map.get( field ), field.getType() );
-					if( resValue != null ){
-						
-						// if the newObj is null then create a new object 
-						if( newObj == null ){
-							newObj = (T) dataClass.newInstance();
-						}
-						
-						assignValueToField( newObj, field, resValue );
-						
-					}
-				}
-				
-				// Add created object to the list
-				resultObjectList.add( newObj );
-				
-				// Make newObj as null so that a new object will be created for the next tuple of data 
-				newObj = null;
-			}
-			
-		}catch( SQLException sqlEx ){
-			throw new DataAccessException( "Unable to read data from ResultSet", sqlEx );
-		}catch( InstantiationException insEx ){
-			throw new ObjectCreationException( "Unable to instantiate an object from given class " + dataClass.getName(), insEx );
-		}catch( IllegalAccessException illAccEx ){
-			throw new ObjectCreationException( "Unable to access the nullary constructor of " + dataClass.getName(), illAccEx );
+		// return empty list if the result does not have any values.
+		result.last();
+		if( result.getRow() == 0 ){
+			return resultObjectList;
 		}
+		result.beforeFirst();
+		
+		// Get the mapped values of given class and the result
+		HashMap< Field, String > map = getFieldColumnMapping( dataClass, result );
+		
+		if( map == null ){
+			
+			// If map is null then return null( dataClass or result is null ).
+			return null;
+			
+		} else if( map.size() == 0 ){
+			
+			// Map size 0 means that the map is empty the no need to go further and return empty list. 
+			return resultObjectList;
+		}
+		
+		T newObj = null;
+		
+		// Iterate through result
+		while( result.next() ) {
+			
+			for( Field field : map.keySet() ){
+					
+				Object resValue = parseValue( result, map.get( field ), field.getType() );
+				if( resValue != null ){
+					
+					// if the newObj is null then create a new object 
+					if( newObj == null ){
+						try{
+							newObj = (T) dataClass.newInstance();
+						}catch( IllegalAccessException illEx ){
+							throw new ObjectCreationException( "The class " + dataClass.getName() + " or its nullary constructor is not accessible ", illEx );
+						}catch (InstantiationException insEx ) {
+							throw new ObjectCreationException( "Could not create instance of " + dataClass.getName(), insEx );
+						}
+					}
+					
+					assignValueToField( newObj, field, resValue );
+					
+				}
+			}
+			
+			// Add created object to the list
+			resultObjectList.add( newObj );
+			
+			// Make newObj as null so that a new object will be created for the next tuple of data 
+			newObj = null;
+		}
+			
 		return resultObjectList;
 	}
 	
