@@ -1,6 +1,7 @@
 package com.cinergix.mapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -111,6 +112,19 @@ public abstract class ObjectMapperTestAbstract {
 			}
 			
 			return null;
+		}
+		
+		public Object testCreateNewInstance( Class source ){
+			return this.createNewInstance( source );
+		}
+		
+		public Method testGetMethodByName( Class source, String methodName ){
+			return this.getMethodByName( source, methodName );
+		}
+		
+		public Object testTransformValue( Object transformerInstance, Method method, Object value ){
+			
+			return this.transformValue( transformerInstance, method, value );
 		}
 	}
 }
