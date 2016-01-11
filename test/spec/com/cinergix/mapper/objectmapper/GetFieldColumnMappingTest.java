@@ -153,17 +153,32 @@ public class GetFieldColumnMappingTest extends ObjectMapperTestAbstract {
 	@Test
 	public void itShouldReturnMappedSetWithBothFieldsEvenIFthereAreMoreThanOneFieldsAnnotatedToMapASingleColumn(){
 		
-		createMockTableManager();
-		
 		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id, name, email FROM user WHERE id LIKE 'testID'" );
 		
 		HashMap<Field, String> fieldsVsColumns = mapper.testGetFieldColumnMapping( SimpleColumnMappedUserMock.class, result );
 		
 		assertTrue("getFieldColumnMapping should return mapped set which should have mapping for officeEmail even though email is mapped to two fields", ( "email" ).equals( fieldsVsColumns.get( getField( SimpleColumnMappedUserMock.class, "officeEmail" ) ) ) );
 		assertTrue("getFieldColumnMapping should return mapped set which should have mapping for personalEmail even though email is mapped to two fields", ( "email" ).equals( fieldsVsColumns.get( getField( SimpleColumnMappedUserMock.class, "personalEmail" ) ) ) );
+	}
+	
+	@Test
+	public void itShouldMapOnlyOneColumnLableInTheResultSetEvenIfThereAreMoreThanOneValueInTheAnnotation(){
 		
-		dropMockTableManager();
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
 		
+		HashMap<Field, String> fieldsVsColumns = mapper.testGetFieldColumnMapping( UserMock.class, result );
+		
+		assertEquals( "getFieldColumnMapping should map only one column lable from ResultSet even if there are omre than one value is in the annotation", "user_name", fieldsVsColumns.get( getField( UserMock.class, "name" ) ) );
+	}
+	
+	@Test
+	public void itShouldMapFirstAvailableColumnLableInTheResultSetEvenIfThereAreMoreThanOneValueAvailableToMapToASingleFieldOfObject(){
+		
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_office_mail, 'test_email@gmail.com' as user_personal_mail FROM user WHERE id LIKE 'testID'" );
+		
+		HashMap<Field, String> fieldsVsColumns = mapper.testGetFieldColumnMapping( UserMock.class, result );
+		
+		assertEquals( "getFieldColumnMapping should map first available column in the ResultSetEven if there are more than one value available to map to a single field of Object", "user_office_mail", fieldsVsColumns.get( getField( UserMock.class, "email" ) ) );
 	}
 
 }

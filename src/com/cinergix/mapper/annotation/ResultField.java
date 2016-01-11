@@ -20,5 +20,5 @@ public @interface ResultField {
 	 * To hold the column label which maps to the property
 	 * @return Label of the column
 	 */
-	String value();
+	String[] value();
 }
