@@ -126,5 +126,10 @@ public abstract class ObjectMapperTestAbstract {
 			
 			return this.transformValue( transformerInstance, method, value );
 		}
+		
+		public boolean testIsValidDataClass( Class dataClass ){
+			
+			return this.isValidDataClass( dataClass );
+		}
 	}
 }
