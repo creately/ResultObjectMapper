@@ -1,6 +1,8 @@
 package com.cinergix.mapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -14,8 +16,13 @@ import com.cinergix.mapper.annotation.ResultField;
 import com.cinergix.mapper.annotation.ResultMapped;
 import com.cinergix.mapper.exception.DataAccessException;
 import com.cinergix.mapper.exception.DataTypeConversionException;
+import com.cinergix.mapper.exception.MethodInvocationException;
+import com.cinergix.mapper.exception.MethodRetrieveException;
 import com.cinergix.mapper.exception.ObjectCreationException;
 import com.cinergix.mapper.exception.PropertyAccessException;
+import com.cinergix.mapper.transformer.IResultTransformer;
+import com.cinergix.mapper.transformer.annotation.ResultTransformer;
+import com.cinergix.mapper.transformer.annotation.ResultTransformerClass;
 
 /**
  * This class provides main functionalities of “ResultObjectMapper”.
@@ -81,25 +88,56 @@ public class ObjectMapper<T> {
 			return resultObjectList;
 		}
 		
+		Class transformerClass = null;
+		Object transformerInstance = null;
+		if( dataClass.isAnnotationPresent( ResultTransformerClass.class ) ){
+			
+			transformerClass = dataClass.getAnnotation( ResultTransformerClass.class ).value();
+			
+			if( !IResultTransformer.class.isAssignableFrom( transformerClass  ) ){
+				transformerClass = null;
+			}
+		}
+		
 		T newObj = null;
 		
 		// Iterate through result
 		while( result.next() ) {
 			
 			for( Field field : map.keySet() ){
+				
+				Object resValue = null;
+				
+				Class dataType = field.getType();
+				
+				if( transformerClass != null && field.isAnnotationPresent( ResultTransformer.class ) ){
 					
-				Object resValue = parseValue( result, map.get( field ), field.getType() );
+					String transformMethodName = field.getAnnotation( ResultTransformer.class ).value();
+					Method transformerMethod = getMethodByName( transformerClass, transformMethodName );
+					
+					if( transformerMethod.getReturnType().isAssignableFrom( field.getType() ) ){
+						
+						if( transformerInstance == null ){
+							transformerInstance = createNewInstance( transformerClass );
+						}
+						
+						resValue = parseValue( result, map.get( field ), transformerMethod.getParameterTypes()[0] );
+						resValue = transformValue( transformerInstance, transformerMethod, resValue );
+					} else {
+						
+						resValue = parseValue( result, map.get( field ), field.getType() );
+					}
+				}else{
+					
+					resValue = parseValue( result, map.get( field ), field.getType() );
+				}
+				
 				if( resValue != null ){
 					
 					// if the newObj is null then create a new object 
 					if( newObj == null ){
-						try{
-							newObj = (T) dataClass.newInstance();
-						}catch( IllegalAccessException illEx ){
-							throw new ObjectCreationException( "The class " + dataClass.getName() + " or its nullary constructor is not accessible ", illEx );
-						}catch (InstantiationException insEx ) {
-							throw new ObjectCreationException( "Could not create instance of " + dataClass.getName(), insEx );
-						}
+						
+						newObj = (T)createNewInstance( dataClass );
 					}
 					
 					assignValueToField( newObj, field, resValue );
@@ -252,5 +290,75 @@ public class ObjectMapper<T> {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Creates and return a new instance of given source class.
+	 * @param source - Class to create the instance.
+	 * @return - Instance of given class
+	 */
+	protected Object createNewInstance( Class source ){
+		
+		//Check if the source class is abstract or interface and throw exception( We can not create instance of Abstract classes and Interfaces )
+		if( source == null ){
+			return null;
+		} else if( Modifier.isInterface( source.getModifiers() ) ) {
+			throw new ObjectCreationException( "Given class " + source.getName() + " is an Interface. Source class should be instantiable." );
+		} else if( Modifier.isAbstract( source.getModifiers() ) ){
+			throw new ObjectCreationException( "Given class " + source.getName() + " is an Abstract class. Source class should be instantiable." );
+		}
+		
+		try{
+			
+			return source.newInstance();
+			
+		}catch( IllegalAccessException illEx ){
+			throw new ObjectCreationException( "The class " + source.getName() + " or its nullary constructor is not accessible ", illEx );
+		}catch (InstantiationException insEx ) {
+			throw new ObjectCreationException( "Could not create instance of " + source.getName(), insEx );
+		}
+	}
+	
+	/**
+	 * To get a method by its name from a given class.
+	 * @param source the class which has the method
+	 * @param methodName name of the method to retrieve
+	 * @return returns the retrieved method
+	 */
+	protected Method getMethodByName( Class source, String methodName ){
+		
+		Method[] methods = source.getMethods();
+		
+		for( Method method : methods ){
+			
+			if( method.getName().equals( methodName ) && method.getParameterTypes().length == 1 ){
+				return method;
+			}
+		}
+		
+		throw new MethodRetrieveException( "There are no methods available in given class with given name with one input parameter" );
+	}
+	
+	protected Object transformValue( Object transformerInstance, Method method, Object value ){
+		
+		if( value == null ){
+			return null;
+		}
+		
+		Object transformedValue = null;
+		try{
+			
+			transformedValue = method.invoke( transformerInstance, value );
+			
+		}catch( InvocationTargetException invEx ){
+			// Throws any exception thrown from the method when executing it.
+			throw new MethodInvocationException( "Unable to invoke the method " + method.getName() + " of class " + transformerInstance.getClass().getName(), invEx );
+		} catch( IllegalAccessException illEx){
+			// IllegalAccessException will be thrown when we try to execute an unaccessible method or the source class is unaccessible ( private, protected, etc ).
+			// This should not happen since we are getting
+			throw new MethodInvocationException( "Unable to access the method " + method.getName() + " of class " + transformerInstance.getClass().getName() + ". This class does not have access to either source class or given method.", illEx );
+		}
+		
+		return transformedValue;
 	}
 }

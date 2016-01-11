@@ -134,7 +134,7 @@ public class MapResultSetToObjectTest extends ObjectMapperTestAbstract {
 		List<UserMock> userList = mapper.testMapResultSetToObject( result, UserMock.class );
 		
 		assertEquals( "mapResultSetToObject should return mapped object for given one tuple of value in result set", 1, userList.size() );
-		assertTrue( "mapResultSetToObject should return mapped object string value for given one tuple of value in result set", ( "Test Name" ).equals( userList.get( 0 ).getName() ) );
+		assertTrue( "mapResultSetToObject should return mapped object string value for given one tuple of value in result set", ( "testID" ).equals( userList.get( 0 ).getId() ) );
 		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", 25, userList.get( 0 ).getAge() );
 	}
 	
@@ -155,5 +155,16 @@ public class MapResultSetToObjectTest extends ObjectMapperTestAbstract {
 		assertTrue( "mapResultSetToObject should return a list containing two SimpleUserMock", expectedStrings.contains( userList.get( 0 ).getName() ) );
 		assertTrue( "mapResultSetToObject should return a list containing two SimpleUserMock", expectedStrings.contains( userList.get( 1 ).getName() ) );
 		dbHelper.updateData( "DELETE FROM user WHERE id LIKE 'testID2'" );
-	}	
+	}
+	
+	@Test
+	public void itShouldReturnMappedObjectWithTransformedValueIfAFieldIsAnnotatedWithTransformerMethod(){
+		
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email FROM user WHERE id LIKE 'testID'" );
+		
+		TestableObjectMapper<UserMock> mapper = new TestableObjectMapper<UserMock>();
+		List<UserMock> userList = mapper.testMapResultSetToObject( result, UserMock.class );
+		
+		assertEquals( "mapResultSetToObject should return mapped objects with manipulated value if a peoperty is annotated with a transformer method", "Test", userList.get( 0 ).getName() );
+	}
 }
