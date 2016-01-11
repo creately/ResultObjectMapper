@@ -29,8 +29,7 @@ public class UserMock {
 	@ResultField( "user_last_update" )
 	private Date lastUpdate;
 	@ResultObject
-	@ResultField( "manager" )
-	private SimpleUserMock manager;
+	private ManagerMock manager;
 	@ResultField( "user_married" )
 	private boolean married;
 	
@@ -58,10 +57,10 @@ public class UserMock {
 	public void setAge(int age) {
 		this.age = age;
 	}
-	public SimpleUserMock getManager() {
+	public ManagerMock getManager() {
 		return manager;
 	}
-	public void setManager(SimpleUserMock manager) {
+	public void setManager(ManagerMock manager) {
 		this.manager = manager;
 	}
 	public double getWeight() {
