@@ -53,10 +53,20 @@ public class ObjectMapper<T> {
 	private HashMap< Field, String > fieldColumnMap;
 	private HashMap< Field, ObjectMapper > fieldMapperMap;
 	
-	private HashSet<Class> usedDataClasses = new HashSet<Class>();
+	private HashSet<Class> usedDataClasses;
 	
 	private Class transformerClass = null;
 	private Object transformerInstance = null;
+	
+	public ObjectMapper(){
+		
+		usedDataClasses = new HashSet<Class>();
+	}
+	
+	public ObjectMapper( HashSet<Class> usedDataClasses ){
+		
+		this.usedDataClasses = usedDataClasses;
+	}
 
 	/**
 	 * Converts and returns a list of objects of type <code>T</code>. Those objects will have 
@@ -327,20 +337,17 @@ public class ObjectMapper<T> {
 		HashMap<Field, ObjectMapper> map = null;
 
 		for( Field field : dataClass.getDeclaredFields() ){
-			
-			if( field.isAnnotationPresent( ResultObject.class ) ){
 				
-				if( field.isAnnotationPresent( ResultObject.class ) && isValidDataClass( field.getType() ) ) {
+			if( field.isAnnotationPresent( ResultObject.class ) && isValidDataClass( field.getType() ) ) {
+				
+				ObjectMapper om = new ObjectMapper( this.usedDataClasses );
+				
+				if( om.prepareDataForMapping( field.getType(), result ) ){
 					
-					ObjectMapper om = new ObjectMapper();
-					
-					if( om.prepareDataForMapping( field.getType(), result ) ){
-						
-						if( map == null ) {
-							map = new HashMap<Field, ObjectMapper>();
-						}
-						map.put( field, om );
+					if( map == null ) {
+						map = new HashMap<Field, ObjectMapper>();
 					}
+					map.put( field, om );
 				}
 			}
 		}

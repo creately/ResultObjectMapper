@@ -131,5 +131,17 @@ public abstract class ObjectMapperTestAbstract {
 			
 			return this.isValidDataClass( dataClass );
 		}
+		
+		public HashMap<Field, ObjectMapper> testGetFieldMapperMapping( Class dataClass, ResultSet result ) {
+			
+			try{
+				
+				return this.getFieldMapperMapping( dataClass, result );
+			} catch( SQLException ex ){
+				ex.printStackTrace();
+				fail();
+			}
+			return null;
+		}
 	}
 }

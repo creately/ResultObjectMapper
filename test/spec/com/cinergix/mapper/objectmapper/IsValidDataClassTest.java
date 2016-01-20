@@ -66,6 +66,7 @@ public class IsValidDataClassTest extends ObjectMapperTestAbstract {
 		
 	}
 	
+	@Test
 	public void itShouldReturnTrueIfTheGivenClassIsValidDataClass(){
 		
 		TestableObjectMapper<UnMappedUserMock> mapper = new TestableObjectMapper<UnMappedUserMock>();
