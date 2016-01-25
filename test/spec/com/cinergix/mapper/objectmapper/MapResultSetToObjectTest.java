@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
@@ -17,6 +18,7 @@ import org.junit.Test;
 import com.cinergix.mapper.ObjectMapper;
 import com.cinergix.mapper.ObjectMapperTestAbstract;
 import com.cinergix.mapper.data.AbstractUserMock;
+import com.cinergix.mapper.data.InnerUserMock;
 import com.cinergix.mapper.data.InterfaceUserMock;
 import com.cinergix.mapper.data.PrivateContructorUserMock;
 import com.cinergix.mapper.data.SimpleUserMock;
@@ -166,5 +168,30 @@ public class MapResultSetToObjectTest extends ObjectMapperTestAbstract {
 		List<UserMock> userList = mapper.testMapResultSetToObject( result, UserMock.class );
 		
 		assertEquals( "mapResultSetToObject should return mapped objects with manipulated value if a peoperty is annotated with a transformer method", "Test", userList.get( 0 ).getName() );
+	}
+	
+	@Test
+	public void itShouldReturnMappedObjectWhichHasInnerObjectForGivenOneTupleOfValueInResultSet(){
+		
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age, 'Test Manager' as manager_name FROM user WHERE id LIKE 'testID'" );
+		
+		TestableObjectMapper<UserMock> mapper = new TestableObjectMapper<UserMock>();
+		List<UserMock> userList = mapper.testMapResultSetToObject( result, UserMock.class );
+		
+		assertEquals( "mapResultSetToObject should return mapped object for given one tuple of value in result set", 1, userList.size() );
+		assertTrue( "mapResultSetToObject should return mapped object string value for given one tuple of value in result set", ( "testID" ).equals( userList.get( 0 ).getId() ) );
+		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", 25, userList.get( 0 ).getAge() );
+		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", "Test Manager", userList.get( 0 ).getManager().getName() );
+	}
+	
+	@Test
+	public void itShouldMapSecondLevelOfInnerObjectIfProperMappingsAreFound(){
+		
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age, 'Test Manager' as manager_name, 'Per_Assis' as pa_name FROM user WHERE id LIKE 'testID'" );
+		
+		TestableObjectMapper<InnerUserMock> mapper = new TestableObjectMapper<InnerUserMock>();
+		List<InnerUserMock> userList = mapper.testMapResultSetToObject( result, InnerUserMock.class );
+		
+		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", "Per_Assis", userList.get( 0 ).getManager().getPersonalAssistant().getName() );
 	}
 }
