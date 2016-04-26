@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ResultObjectMapper" default="dist" basedir=".">
+<project name="result-object-mapper" default="dist" basedir=".">
     <description>
         ORM layer to map the SQL Query results to Java Classes
     </description>
@@ -37,7 +37,7 @@
 	<!-- Create jar file -->
     <target name="dist" depends="compile" description="generate the distribution">
         <!-- Put everything in ${build} into the ProjectName.${VERSION}.jar file -->
-        <jar jarfile="${dist}/${ant.project.name}.${project.version}.jar">
+        <jar jarfile="${dist}/${ant.project.name}-${project.version}.jar">
         	<fileset dir="${build}">
         		<exclude name="test/**"/>
         	</fileset>

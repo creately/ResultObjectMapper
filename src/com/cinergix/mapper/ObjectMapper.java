@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,8 @@ public class ObjectMapper<T> {
 	private Class transformerClass = null;
 	private Object transformerInstance = null;
 	
+	private T objectToFill = null;
+	
 	public ObjectMapper(){
 		
 		usedDataClasses = new HashSet<Class>();
@@ -66,6 +69,13 @@ public class ObjectMapper<T> {
 	public ObjectMapper( HashSet<Class> usedDataClasses ){
 		
 		this.usedDataClasses = usedDataClasses;
+	}
+	
+	public T mapResultSetToObject( ResultSet result, T objectToFill ) throws SQLException {
+		
+		this.objectToFill = objectToFill;
+		List<T> list = this.mapResultSetToObject( result, (Class<T>)objectToFill.getClass() );
+		return list.get( 0 );
 	}
 
 	/**
@@ -194,7 +204,14 @@ public class ObjectMapper<T> {
 				// if the newObj is null then create a new object 
 				if( newObj == null ){
 					
-					newObj = createNewInstance( dataClass );
+					if( objectToFill != null ) {
+						
+						newObj = this.objectToFill;
+						this.objectToFill = null;
+					} else {
+						
+						newObj = createNewInstance( dataClass );
+					}
 				}
 				
 				assignValueToField( newObj, field, resValue );
@@ -336,7 +353,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, ObjectMapper> map = null;
 
-		for( Field field : dataClass.getDeclaredFields() ){
+		for( Field field : dataClass.getDeclaredFields() ){//for( Field field : this.getAllDeclaredFields( dataClass ) ){
 				
 			if( field.isAnnotationPresent( ResultObject.class ) && isValidDataClass( field.getType() ) ) {
 				
@@ -353,6 +370,15 @@ public class ObjectMapper<T> {
 		}
 			
 		return map;
+	}
+	
+	protected Field[] getAllDeclaredFields( Class<T> type ) {
+		
+		List<Field> fields = new ArrayList<Field>();
+		for( Class classType = type; classType != Object.class; classType.getSuperclass() ){
+			fields.addAll( Arrays.asList( classType.getDeclaredFields() ) );
+		}
+		return ( Field[] ) fields.toArray();
 	}
 	
 	protected boolean checkColumnLabelExist( ResultSet result, String columnLabel ) throws SQLException{
