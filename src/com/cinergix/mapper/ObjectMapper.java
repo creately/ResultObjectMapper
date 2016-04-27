@@ -237,7 +237,7 @@ public class ObjectMapper<T> {
 			return;
 		}
 		
-		if( !field.getDeclaringClass().equals( createdObject.getClass() ) ) {
+		if( !field.getDeclaringClass().isAssignableFrom( createdObject.getClass() ) ) {
 			throw new PropertyAccessException( "Can not assign value to a field " + field.getName() + " of Type " + field.getDeclaringClass().getName() + " to instance of type " + createdObject.getClass().getName() );
 		}
 		
@@ -328,7 +328,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, String> map = new HashMap<Field, String>();
 
-		for( Field field : dataClass.getDeclaredFields() ){
+		for( Field field : this.getAllDeclaredFields( dataClass ) ){
 			
 			ResultField resultAnnotation = field.getAnnotation( ResultField.class );
 			if( resultAnnotation != null && resultAnnotation.value() != null ){
@@ -353,7 +353,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, ObjectMapper> map = null;
 
-		for( Field field : dataClass.getDeclaredFields() ){//for( Field field : this.getAllDeclaredFields( dataClass ) ){
+		for( Field field : this.getAllDeclaredFields( dataClass ) ){//for( Field field : this.getAllDeclaredFields( dataClass ) ){
 				
 			if( field.isAnnotationPresent( ResultObject.class ) && isValidDataClass( field.getType() ) ) {
 				
@@ -372,13 +372,13 @@ public class ObjectMapper<T> {
 		return map;
 	}
 	
-	protected Field[] getAllDeclaredFields( Class<T> type ) {
+	protected List<Field> getAllDeclaredFields( Class<T> type ) {
 		
 		List<Field> fields = new ArrayList<Field>();
-		for( Class classType = type; classType != Object.class; classType.getSuperclass() ){
+		for( Class classType = type; classType != Object.class; classType = classType.getSuperclass() ){
 			fields.addAll( Arrays.asList( classType.getDeclaredFields() ) );
 		}
-		return ( Field[] ) fields.toArray();
+		return fields;
 	}
 	
 	protected boolean checkColumnLabelExist( ResultSet result, String columnLabel ) throws SQLException{
