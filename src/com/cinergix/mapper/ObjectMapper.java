@@ -28,7 +28,7 @@ import com.cinergix.mapper.transformer.annotation.ResultTransformer;
 import com.cinergix.mapper.transformer.annotation.ResultTransformerClass;
 
 /**
- * This class provides main functionalities of “ResultObjectMapper”.
+ * This class provides main functionalities of "ResultObjectMapper".
  * <code>ObjectMapper</code> converts <code>ResultSet</code> data into java objects. To do this 
  * conversion Java classes should be annotated with <code>ResultMapped</code> in class level. To 
  * assign the column data to a property of a mapped object that property should be annotated with 
