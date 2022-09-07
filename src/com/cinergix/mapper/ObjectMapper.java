@@ -74,8 +74,8 @@ public class ObjectMapper<T> {
 	public T mapResultSetToObject( ResultSet result, T objectToFill ) throws SQLException {
 		
 		this.objectToFill = objectToFill;
-		List<T> list = this.mapResultSetToObject( result, (Class<T>)objectToFill.getClass() );
-		return list.get( 0 );
+		this.mapResultSetToObject( result, (Class<T>)objectToFill.getClass() );
+		return this.objectToFill;
 	}
 
 	/**
