@@ -100,11 +100,9 @@ public class ObjectMapper<T> {
 		List<T> resultObjectList = new ArrayList<T>();
 		
 		// return empty list if the result does not have any values.
-		result.last();
-		if( result.getRow() == 0 ){
+		if( !result.next() ){
 			return resultObjectList;
 		}
-		result.beforeFirst();
 		
 		if( !prepareDataForMapping( dataClass, result ) ) {
 			
@@ -121,11 +119,11 @@ public class ObjectMapper<T> {
 		}
 		
 		// Iterate through result
-		while( result.next() ) {
+		do {
 			
 			// Add created object to the list
 			resultObjectList.add( (T)insertValuesToObject( result ) );
-		}
+		} while( result.next() );
 			
 		return resultObjectList;
 	}
@@ -307,7 +305,7 @@ public class ObjectMapper<T> {
 				return result.getTimestamp( columnName );
 			}
 			
-		}catch( SQLException ex ){
+		}catch( Exception ex ){
 			
 			throw new DataTypeConversionException( "Unable to convert the value in " + columnName + " as " + typeClass.getName(), ex );
 		}
