@@ -75,7 +75,7 @@ public class ObjectMapper<T> {
 		
 		this.objectToFill = objectToFill;
 		this.mapResultSetToObject( result, (Class<T>)objectToFill.getClass() );
-		return this.objectToFill;
+		return objectToFill;
 	}
 
 	/**
