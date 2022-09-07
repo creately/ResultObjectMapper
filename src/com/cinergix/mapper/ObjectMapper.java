@@ -326,7 +326,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, String> map = new HashMap<Field, String>();
 
-		for( Field field : this.getAllDeclaredFields( dataClass ) ){
+		for( Field field : ( List<Field> )this.getAllDeclaredFields( dataClass ) ){
 			
 			ResultField resultAnnotation = field.getAnnotation( ResultField.class );
 			if( resultAnnotation != null && resultAnnotation.value() != null ){
@@ -351,7 +351,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, ObjectMapper> map = null;
 
-		for( Field field : this.getAllDeclaredFields( dataClass ) ){//for( Field field : this.getAllDeclaredFields( dataClass ) ){
+		for( Field field : ( List<Field> )this.getAllDeclaredFields( dataClass ) ){
 				
 			if( field.isAnnotationPresent( ResultObject.class ) && isValidDataClass( field.getType() ) ) {
 				
@@ -420,11 +420,11 @@ public class ObjectMapper<T> {
 		
 		try{
 			
-			return source.newInstance();
+			return source.getDeclaredConstructor().newInstance();
 			
 		}catch( IllegalAccessException illEx ){
 			throw new ObjectCreationException( "The class " + source.getName() + " or its nullary constructor is not accessible ", illEx );
-		}catch (InstantiationException insEx ) {
+		}catch (InstantiationException | NoSuchMethodException | InvocationTargetException insEx ) {
 			throw new ObjectCreationException( "Could not create instance of " + source.getName(), insEx );
 		}
 	}
