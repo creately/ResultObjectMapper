@@ -2,6 +2,8 @@
 /build
 /test_build
 /dist
+/out
 .classpath
 .project
 .settings
+.DS_Store
