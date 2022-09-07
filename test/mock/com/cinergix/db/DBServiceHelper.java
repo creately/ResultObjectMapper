@@ -17,8 +17,8 @@ public class DBServiceHelper {
 
 	private static DBServiceHelper instance = null;
 	
-	private String userName = "db_user_name"; // Database login user name
-	private String password = "******"; // Database login Password
+	private String userName = "root"; // Database login user name
+	private String password = "p4ssw0rd"; // Database login Password
 	private String database = "jdbc:mysql://localhost";// Database URL path
 	private Connection connection;
 	

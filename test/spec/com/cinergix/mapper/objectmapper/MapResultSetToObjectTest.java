@@ -18,6 +18,7 @@ import org.junit.Test;
 import com.cinergix.mapper.ObjectMapper;
 import com.cinergix.mapper.ObjectMapperTestAbstract;
 import com.cinergix.mapper.data.AbstractUserMock;
+import com.cinergix.mapper.data.ExtendedUserMock;
 import com.cinergix.mapper.data.InnerUserMock;
 import com.cinergix.mapper.data.InterfaceUserMock;
 import com.cinergix.mapper.data.PrivateContructorUserMock;
@@ -193,5 +194,33 @@ public class MapResultSetToObjectTest extends ObjectMapperTestAbstract {
 		List<InnerUserMock> userList = mapper.testMapResultSetToObject( result, InnerUserMock.class );
 		
 		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", "Per_Assis", userList.get( 0 ).getManager().getPersonalAssistant().getName() );
+	}
+	
+	@Test
+	public void itShouldReturnGivenObjectMappedValueInResultSet() throws SQLException{
+		
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age FROM user WHERE id LIKE 'testID'" );
+		
+		TestableObjectMapper<UserMock> mapper = new TestableObjectMapper<UserMock>();
+		UserMock userMock = new UserMock();
+		UserMock user = mapper.mapResultSetToObject( result, userMock );
+		
+		assertTrue( "mapResultSetToObject should return mapped object string value for given one tuple of value in result set", ( "testID" ).equals( user.getId() ) );
+		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", 25, user.getAge() );
+		assertEquals( userMock, user );
+	}
+	
+	@Test
+	public void itShouldReturnMappedValueInResultSetEvenIfItIsExtended() throws SQLException{
+		
+		ResultSet result = dbHelper.getResultSetForQuery( "SELECT id as user_id, name as user_name, email as user_email, age as user_age FROM user WHERE id LIKE 'testID'" );
+		
+		TestableObjectMapper<ExtendedUserMock> mapper = new TestableObjectMapper<ExtendedUserMock>();
+		ExtendedUserMock userMock = new ExtendedUserMock();
+		ExtendedUserMock user = mapper.mapResultSetToObject( result, userMock );
+		
+		assertTrue( "mapResultSetToObject should return mapped object string value for given one tuple of value in result set", ( "testID" ).equals( user.getId() ) );
+		assertEquals( "mapResultSetToObject should return mapped object with int value for given one tuple of value in result set", 25, user.getAge() );
+		assertEquals( userMock, user );
 	}
 }

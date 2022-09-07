@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +28,7 @@ import com.cinergix.mapper.transformer.annotation.ResultTransformer;
 import com.cinergix.mapper.transformer.annotation.ResultTransformerClass;
 
 /**
- * This class provides main functionalities of “ResultObjectMapper”.
+ * This class provides main functionalities of "ResultObjectMapper".
  * <code>ObjectMapper</code> converts <code>ResultSet</code> data into java objects. To do this 
  * conversion Java classes should be annotated with <code>ResultMapped</code> in class level. To 
  * assign the column data to a property of a mapped object that property should be annotated with 
@@ -58,6 +59,8 @@ public class ObjectMapper<T> {
 	private Class transformerClass = null;
 	private Object transformerInstance = null;
 	
+	private T objectToFill = null;
+	
 	public ObjectMapper(){
 		
 		usedDataClasses = new HashSet<Class>();
@@ -66,6 +69,13 @@ public class ObjectMapper<T> {
 	public ObjectMapper( HashSet<Class> usedDataClasses ){
 		
 		this.usedDataClasses = usedDataClasses;
+	}
+	
+	public T mapResultSetToObject( ResultSet result, T objectToFill ) throws SQLException {
+		
+		this.objectToFill = objectToFill;
+		List<T> list = this.mapResultSetToObject( result, (Class<T>)objectToFill.getClass() );
+		return list.get( 0 );
 	}
 
 	/**
@@ -192,7 +202,14 @@ public class ObjectMapper<T> {
 				// if the newObj is null then create a new object 
 				if( newObj == null ){
 					
-					newObj = createNewInstance( dataClass );
+					if( objectToFill != null ) {
+						
+						newObj = this.objectToFill;
+						this.objectToFill = null;
+					} else {
+						
+						newObj = createNewInstance( dataClass );
+					}
 				}
 				
 				assignValueToField( newObj, field, resValue );
@@ -218,7 +235,7 @@ public class ObjectMapper<T> {
 			return;
 		}
 		
-		if( !field.getDeclaringClass().equals( createdObject.getClass() ) ) {
+		if( !field.getDeclaringClass().isAssignableFrom( createdObject.getClass() ) ) {
 			throw new PropertyAccessException( "Can not assign value to a field " + field.getName() + " of Type " + field.getDeclaringClass().getName() + " to instance of type " + createdObject.getClass().getName() );
 		}
 		
@@ -309,7 +326,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, String> map = new HashMap<Field, String>();
 
-		for( Field field : dataClass.getDeclaredFields() ){
+		for( Field field : ( List<Field> )this.getAllDeclaredFields( dataClass ) ){
 			
 			ResultField resultAnnotation = field.getAnnotation( ResultField.class );
 			if( resultAnnotation != null && resultAnnotation.value() != null ){
@@ -334,7 +351,7 @@ public class ObjectMapper<T> {
 		
 		HashMap<Field, ObjectMapper> map = null;
 
-		for( Field field : dataClass.getDeclaredFields() ){
+		for( Field field : ( List<Field> )this.getAllDeclaredFields( dataClass ) ){
 				
 			if( field.isAnnotationPresent( ResultObject.class ) && isValidDataClass( field.getType() ) ) {
 				
@@ -351,6 +368,15 @@ public class ObjectMapper<T> {
 		}
 			
 		return map;
+	}
+	
+	protected List<Field> getAllDeclaredFields( Class<T> type ) {
+		
+		List<Field> fields = new ArrayList<Field>();
+		for( Class classType = type; classType != Object.class; classType = classType.getSuperclass() ){
+			fields.addAll( Arrays.asList( classType.getDeclaredFields() ) );
+		}
+		return fields;
 	}
 	
 	protected boolean checkColumnLabelExist( ResultSet result, String columnLabel ) throws SQLException{
@@ -394,11 +420,11 @@ public class ObjectMapper<T> {
 		
 		try{
 			
-			return source.newInstance();
+			return source.getDeclaredConstructor().newInstance();
 			
 		}catch( IllegalAccessException illEx ){
 			throw new ObjectCreationException( "The class " + source.getName() + " or its nullary constructor is not accessible ", illEx );
-		}catch (InstantiationException insEx ) {
+		}catch (InstantiationException | NoSuchMethodException | InvocationTargetException insEx ) {
 			throw new ObjectCreationException( "Could not create instance of " + source.getName(), insEx );
 		}
 	}
