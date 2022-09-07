@@ -18,13 +18,20 @@ public class UserMock {
 	@ResultField( "user_name" )
 	@ResultTransformer( "getFirstName" )
 	private String name;
-	@ResultField( "user_email" )
+	@ResultField( { "user_email", "user_office_mail", "user_personal_mail" } )
 	private String email;
 	@ResultField( "user_age" )
 	private int age;
+	@ResultField( "user_weight" )
+	private double weight;
+	@ResultField( "user_dob" )
+	private Date dob;
+	@ResultField( "user_last_update" )
+	private Date lastUpdate;
 	@ResultObject
-	@ResultField( "manager" )
-	private SimpleUserMock manager;
+	private ManagerMock manager;
+	@ResultField( "user_married" )
+	private boolean married;
 	
 	public String getId() {
 		return id;
@@ -50,11 +57,29 @@ public class UserMock {
 	public void setAge(int age) {
 		this.age = age;
 	}
-	public SimpleUserMock getManager() {
+	public ManagerMock getManager() {
 		return manager;
 	}
-	public void setManager(SimpleUserMock manager) {
+	public void setManager(ManagerMock manager) {
 		this.manager = manager;
+	}
+	public double getWeight() {
+		return weight;
+	}
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+	public Date getDob() {
+		return dob;
+	}
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 	
 }

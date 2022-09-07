@@ -72,6 +72,17 @@ public class DBServiceHelper {
 		}
 	}
 	
+	public boolean checkTableExist( String tableName ){
+		try{
+			
+			ResultSet result = this.getResultSetForQuery( "SHOW TABLES LIKE '" + tableName +  "'" );
+			return result.next();
+		}catch( SQLException e ){
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	public void createTestDatabase(){
 		
 		// To create the connection
@@ -91,6 +102,7 @@ public class DBServiceHelper {
 		} catch( SQLException e){
 			e.printStackTrace();
 		}
+		
 		updateData("CREATE DATABASE test_object_mapper");
 		changeDB( "test_object_mapper" );
 		
@@ -98,12 +110,15 @@ public class DBServiceHelper {
                 "(id VARCHAR(255) not NULL, " +
                 " name VARCHAR(255), " + 
                 " email VARCHAR(255), " + 
-                //" age INTEGER, " + 
+                " age INT, " +
+                " weight DECIMAL( 6, 3 ), " + 
+                " dob DATE, " +
+                " last_update TIMESTAMP, " +
                 " PRIMARY KEY ( id ))";
 				
 		updateData( tableCreateSQL );
 		// To insert a test data
-		updateData("INSERT INTO user ( id, name, email ) VALUES ( 'testID', 'Test Name', 'test@cinergix.com' )");
+		updateData("INSERT INTO user ( id, name, email, age, weight, dob, last_update ) VALUES ( 'testID', 'Test Name', 'test@cinergix.com', 25, 65.52, '1985-05-05', '2015-10-22 08:30:20' )");
 	}
 	
 	public void destroyDataBase(){
